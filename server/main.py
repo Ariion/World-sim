@@ -45,25 +45,22 @@ async def simulation_loop():
 
 
 # ── STARTUP / SHUTDOWN ───────────────────────────────────────────────
+# ✅ CORRECT
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     await save_manager.connect()
     world_state.initialize()
     world_state._broadcast_fn = broadcast
 
-    # Tentative de restauration depuis DB
     saved = await save_manager.load_latest()
-if saved:
-    print(f"[Genesis] Restauration depuis snapshot (tick {saved.get('time',{}).get('tick','?')})")
-    world_state.from_snapshot(saved)  # ← remplace le commentaire
+    if saved:
+        print(f"[Genesis] Restauration tick {saved.get('time',{}).get('tick','?')}")
+        world_state.from_snapshot(saved)
 
-    # Lance la boucle
     task = asyncio.create_task(simulation_loop())
 
-    yield  # Application en route
+    yield  # ← indenté dans la fonction
 
-    # Shutdown
     task.cancel()
     await save_manager.save_snapshot(world_state)
     print("[Genesis] Simulation sauvegardée. Au revoir.")
