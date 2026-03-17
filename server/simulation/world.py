@@ -31,10 +31,6 @@ from .ecs.tribe_system import (
 from .ecs.systems_warfare import (
     system_tension, system_resolve_wars, get_wars_state,
 )
-from .ecs.tribe_system import (
-    system_migration, system_faith,
-    system_divine_energy_regen, system_extinction_check,
-)
 import server.config as cfg
 
 
@@ -158,14 +154,14 @@ class WorldState:
         text, intensity = random.choice(PRAYER_TEMPLATES)
         self.prayer_id_counter += 1
         prayer = {
-            "id":       self.prayer_id_counter,
-            "tribe_id": tribe.id,
+            "id":         self.prayer_id_counter,
+            "tribe_id":   tribe.id,
             "tribe_name": tribe.name,
-            "text":     text,
-            "intensity": round(intensity, 2),
-            "tick":     self.time.tick,
-            "year_bp":  self.time.year_bp,
-            "answered": False,
+            "text":       text,
+            "intensity":  round(intensity, 2),
+            "tick":       self.time.tick,
+            "year_bp":    self.time.year_bp,
+            "answered":   False,
         }
         self.prayers.insert(0, prayer)
         if len(self.prayers) > 50:
@@ -178,7 +174,6 @@ class WorldState:
         if self.divine_energy < cost:
             return {"ok": False, "reason": "Énergie divine insuffisante."}
 
-        # Cible
         alive = [t for t in self.tribes if t.alive]
         if not alive:
             return {"ok": False, "reason": "Aucune tribu vivante."}
@@ -236,12 +231,11 @@ class WorldState:
         elif action_type == "prophet":
             target.faith = min(1.0, target.faith + 0.35)
             target.memory.prophets += 1
-            # Ajouter un prophète
             from .ecs.components import Member, Position, Vitals, Reproduction, Cognition, SocialRole
             prophet = Member(
                 id=99000 + self.time.tick,
                 position=Position(target.x, target.y),
-                vitals=Vitals(age=28 + random.randint(0,10), health=1.0),
+                vitals=Vitals(age=28 + random.randint(0, 10), health=1.0),
                 reproduction=Reproduction(sex="M"),
                 cognition=Cognition(faith=0.95, curiosity=0.9),
                 social=SocialRole(role="prophet", prestige=0.9),
@@ -300,7 +294,7 @@ class WorldState:
             "tribes":        [t.to_dict() for t in self.tribes],
             "event_log":     self.event_log[:30],
             "prayers":       [p for p in self.prayers[:10]],
-            "wars": get_wars_state(),
+            "wars":          get_wars_state(),
             "stats": {
                 "total_population": sum(t.population() for t in self.tribes if t.alive),
                 "alive_tribes":     sum(1 for t in self.tribes if t.alive),
@@ -310,33 +304,37 @@ class WorldState:
                 "pending_prayers":  sum(1 for p in self.prayers if not p["answered"]),
             }
         }
+
     def from_snapshot(self, data: dict):
-    """Restaure l'état du monde depuis un snapshot PostgreSQL."""
-    # Temps
-    self.time.tick    = data["time"]["tick"]
-    self.time.year_bp = data["time"]["year_bp"]
-    self.time.day     = data["time"].get("day", 0)
-    self.time.season  = data["time"].get("season", 0)
+        """Restaure l'état du monde depuis un snapshot PostgreSQL."""
+        # Temps
+        self.time.tick    = data["time"]["tick"]
+        self.time.year_bp = data["time"]["year_bp"]
+        self.time.day     = data["time"].get("day", 0)
+        self.time.season  = data["time"].get("season", 0)
 
-    # Énergie divine
-    self.divine_energy = data.get("divine_energy", DIVINE_ENERGY_START)
+        # Énergie divine
+        self.divine_energy = data.get("divine_energy", DIVINE_ENERGY_START)
 
-    # Logs & prières
-    self.event_log = data.get("event_log", [])
-    self.prayers   = data.get("prayers", [])
+        # Logs & prières
+        self.event_log = data.get("event_log", [])
+        self.prayers   = data.get("prayers", [])
 
-    # Tribus
-    for t_data in data.get("tribes", []):
-        tribe = next((t for t in self.tribes if t.id == t_data["id"]), None)
-        if tribe:
-            tribe.food        = t_data.get("food", tribe.food)
-            tribe.faith       = t_data.get("faith", tribe.faith)
-            tribe.alive       = t_data.get("alive", True)
-            tribe.x           = t_data.get("x", tribe.x)
-            tribe.y           = t_data.get("y", tribe.y)
-            tribe.rituals     = t_data.get("rituals", 0)
+        # Tribus
+        for t_data in data.get("tribes", []):
+            tribe = next((t for t in self.tribes if t.id == t_data["id"]), None)
+            if tribe:
+                tribe.food    = t_data.get("food", tribe.food)
+                tribe.faith   = t_data.get("faith", tribe.faith)
+                tribe.alive   = t_data.get("alive", True)
+                tribe.x       = t_data.get("x", tribe.x)
+                tribe.y       = t_data.get("y", tribe.y)
+                tribe.rituals = t_data.get("rituals", 0)
 
-    self._log(f"[Restauration] Monde chargé — tick {self.time.tick}, an {self.time.year_bp} BP", "divine")
+        self._log(
+            f"[Restauration] Monde chargé — tick {self.time.tick}, an {self.time.year_bp} BP",
+            "divine"
+        )
 
     def map_to_dict(self) -> dict:
         gen = MapGenerator(MAP_SIZE, WORLD_SEED)
