@@ -310,6 +310,33 @@ class WorldState:
                 "pending_prayers":  sum(1 for p in self.prayers if not p["answered"]),
             }
         }
+    def from_snapshot(self, data: dict):
+    """Restaure l'état du monde depuis un snapshot PostgreSQL."""
+    # Temps
+    self.time.tick    = data["time"]["tick"]
+    self.time.year_bp = data["time"]["year_bp"]
+    self.time.day     = data["time"].get("day", 0)
+    self.time.season  = data["time"].get("season", 0)
+
+    # Énergie divine
+    self.divine_energy = data.get("divine_energy", DIVINE_ENERGY_START)
+
+    # Logs & prières
+    self.event_log = data.get("event_log", [])
+    self.prayers   = data.get("prayers", [])
+
+    # Tribus
+    for t_data in data.get("tribes", []):
+        tribe = next((t for t in self.tribes if t.id == t_data["id"]), None)
+        if tribe:
+            tribe.food        = t_data.get("food", tribe.food)
+            tribe.faith       = t_data.get("faith", tribe.faith)
+            tribe.alive       = t_data.get("alive", True)
+            tribe.x           = t_data.get("x", tribe.x)
+            tribe.y           = t_data.get("y", tribe.y)
+            tribe.rituals     = t_data.get("rituals", 0)
+
+    self._log(f"[Restauration] Monde chargé — tick {self.time.tick}, an {self.time.year_bp} BP", "divine")
 
     def map_to_dict(self) -> dict:
         gen = MapGenerator(MAP_SIZE, WORLD_SEED)
