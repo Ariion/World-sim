@@ -1506,7 +1506,7 @@ function renderEventLog() {
   const log = document.getElementById('event-log');
   log.innerHTML = SIM.eventLog.slice(0,25).map(e=>`
     <div class="event-item">
-      <span class="event-time">${e.year.toLocaleString()}</span>
+      <span class="event-time">${e.year ? e.year.toLocaleString() : '—'}</span>
       <span class="event-text ${e.type==='divine'?'event-divine':e.type==='death'?'event-death':e.type==='birth'?'event-birth':e.type==='faith'?'event-faith':''}">${e.text}</span>
     </div>`).join('');
 }
@@ -1713,8 +1713,8 @@ function updatePlaceLabels() {
 
 // ── HOOK DANS LA BOUCLE D'ANIMATION ──────────────────
 const _origAnimate = animate;
-let _animFrame = 0;
 function animate(time) {
+  if (typeof _animFrame === 'undefined') window._animFrame = 0;
   requestAnimationFrame(animate);
   const dt = (time - lastTime) / 1000;
   lastTime = time;
@@ -1745,8 +1745,8 @@ function animate(time) {
   renderer.render(scene, camera);
 
   // V2 : overlays toutes les 3 frames
-  _animFrame++;
-  if (_animFrame % 3 === 0) {
+  window._animFrame++;
+  if (window._animFrame % 3 === 0) {
     drawTerritories();
     updatePlaceLabels();
   }
