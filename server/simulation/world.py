@@ -31,9 +31,7 @@ from .ecs.tribe_system import (
 from .ecs.systems_warfare import (
     system_tension, system_resolve_wars, get_wars_state,
 )
-from .ecs.systems_warfare import (
-    system_tension, system_resolve_wars, get_wars_state
-#PLACEHOLDER
+from .ecs.tribe_system import (
     system_migration, system_faith,
     system_divine_energy_regen, system_extinction_check,
 )
