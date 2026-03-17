@@ -54,10 +54,9 @@ async def lifespan(app: FastAPI):
 
     # Tentative de restauration depuis DB
     saved = await save_manager.load_latest()
-    if saved:
-        print(f"[Genesis] Restauration depuis snapshot (tick {saved.get('time',{}).get('tick','?')})")
-        # Pour l'instant : on repart de zéro si snapshot trouvé
-        # (implémentation de la restauration complète = étape suivante)
+if saved:
+    print(f"[Genesis] Restauration depuis snapshot (tick {saved.get('time',{}).get('tick','?')})")
+    world_state.from_snapshot(saved)  # ← remplace le commentaire
 
     # Lance la boucle
     task = asyncio.create_task(simulation_loop())
