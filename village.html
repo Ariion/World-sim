@@ -327,9 +327,9 @@ ctx.imageSmoothingEnabled = false;
 // ── WORLD CONFIG ──────────────────────────────────────────────────
 const W = {
   TILE: 32,
-  COLS: 40, ROWS: 30,
+  COLS: 64, ROWS: 48,
   ZOOM: 2.0,
-  ZOOM_MIN: 0.8, ZOOM_MAX: 4.0,
+  ZOOM_MIN: 0.5, ZOOM_MAX: 5.0,
   camX: 0, camY: 0,
   dragging: false,
   dragStart: null,
@@ -450,6 +450,8 @@ function mkHuman(tribeIdx, x, y, role='gatherer') {
     buildTarget:null,
     walkPath:[],
     memory:{ lastHunt:0, lastGather:0 },
+    thought: 'En attente...',
+    mood: 'neutre',
     color: TRIBE_DEFS[tribeIdx].color,
     cr: TRIBE_DEFS[tribeIdx].r,
     cg: TRIBE_DEFS[tribeIdx].g,
@@ -502,14 +504,16 @@ function mkBuilding(type, tx, ty, tribeIdx) {
 
 const HUMAN_NAMES = ['Arak','Bura','Ceda','Dorn','Efa','Grun','Hara','Ival','Jora','Keth',
   'Lana','Moru','Neda','Oran','Pira','Qura','Reva','Sola','Tala','Urna',
-  'Vira','Wena','Xara','Yola','Zura','Akor','Bena','Cela','Dura','Eros'];
+  'Vira','Wena','Xara','Yola','Zura','Akor','Bena','Cela','Dura','Eros',
+  'Fara','Helm','Iska','Juno','Kova','Lyra','Mira','Naok','Oba','Pelu',
+  'Rona','Sera','Tova','Ulan','Vera','Waro','Xeno','Yara','Zeld','Amon'];
 
 // ── INITIALIZE WORLD ──────────────────────────────────────────────
 function initWorld() {
   generateMap();
   // Init tribes
   const SPAWN_CENTERS = [
-    {x:10,y:8},{x:28,y:6},{x:10,y:22},{x:28,y:20},{x:19,y:14}
+    {x:12,y:10},{x:48,y:8},{x:12,y:36},{x:48,y:34},{x:30,y:22}
   ];
   for(let i=0;i<5;i++) {
     const sc = SPAWN_CENTERS[i];
@@ -528,9 +532,9 @@ function initWorld() {
     G.tribes.push(tribe);
 
     // Spawn members
-    const pop = 6+Math.floor(Math.random()*6);
+    const pop = 8+Math.floor(Math.random()*8);
     for(let j=0;j<pop;j++) {
-      const roles = ['hunter','gatherer','gatherer','builder','guard'];
+      const roles = ['hunter','gatherer','gatherer','builder','guard','fisher','elder','shaman'];
       const h = mkHuman(i, sc.x+(Math.random()-0.5)*5, sc.y+(Math.random()-0.5)*5,
                         roles[j % roles.length]);
       G.entities.push(h);
@@ -538,9 +542,10 @@ function initWorld() {
       tribe.pop++;
     }
 
-    // Initial buildings
-    G.buildings.push(mkBuilding('firepit', sc.x, sc.y, i));
-    G.buildings.push(mkBuilding('camp', sc.x+1, sc.y, i));
+    // Initial buildings (pre-built)
+    const fp = mkBuilding('firepit', sc.x, sc.y, i); fp.progress=fp.hp; G.buildings.push(fp);
+    const camp = mkBuilding('camp', sc.x+1, sc.y, i); camp.progress=camp.hp; G.buildings.push(camp);
+    const hut1 = mkBuilding('hut', sc.x-2, sc.y, i); hut1.progress=hut1.hp; G.buildings.push(hut1);
 
     // Init diplomacy
     for(let k=0;k<i;k++) setDiplo(i,k,'neutral');
@@ -556,8 +561,8 @@ function initWorld() {
 
   // Center camera on tribe 0
   const sc0 = SPAWN_CENTERS[0];
-  W.camX = sc0.x * W.TILE - canvas.width/(2*W.ZOOM);
-  W.camY = sc0.y * W.TILE - canvas.height/(2*W.ZOOM);
+  W.camX = Math.max(0, sc0.x * W.TILE - canvas.width/(2*W.ZOOM));
+  W.camY = Math.max(0, sc0.y * W.TILE - canvas.height/(2*W.ZOOM));
 
   // Initial events
   addEvent('Le monde s\'éveille. Les premières tribus allument leurs feux.','season');
@@ -570,7 +575,7 @@ function initWorld() {
 function spawnAnimals() {
   const animalTypes = ['deer','boar','rabbit','bison','bird'];
   const waterTypes = ['fish'];
-  for(let i=0;i<60;i++) {
+  for(let i=0;i<100;i++) {
     const type = animalTypes[Math.floor(Math.random()*animalTypes.length)];
     let x,y,tries=0;
     do {
@@ -580,7 +585,7 @@ function spawnAnimals() {
     G.animals.push(mkAnimal(type, x, y));
   }
   // Fish in water
-  for(let i=0;i<20;i++) {
+  for(let i=0;i<35;i++) {
     let x,y,tries=0;
     do {
       x = Math.random()*W.COLS; y = Math.random()*W.ROWS; tries++;
@@ -1076,59 +1081,136 @@ function updateHuman(e) {
   }
 }
 
+// ── THOUGHT SYSTEM ──────────────────────────────
+const THOUGHTS = {
+  hunt:    ["\u{1F3F9} Je traque...","Une proie en vue !","Je chasse pour ma tribu.","Silence dans la foret..."],
+  gather:  ["Je cueille des baies.","Des champignons ici !","Bonne recolte aujourd'hui.","La terre est genereuse."],
+  build:   ["Ces murs protegeront les notres.","Il nous faut un abri solide.","Encore un peu de travail...","Je construis l'avenir."],
+  fish:    ["L'eau est calme ce matin.","Un poisson ! Doucement...","La riviere nourrit la tribu.","Patience et silence."],
+  guard:   ["Je surveille les horizons.","Aucun ennemi en vue... pour l'instant.","La tribu peut dormir en paix.","Quelque chose bouge la-bas ?"],
+  fight:   ["Pour ma tribu !","Ils ne passeront pas !","Repoussez l'envahisseur !"],
+  sleep:   ["Zzz...","Repos bien merite...","Le feu me tient chaud."],
+  idle:    ["Le feu rechauffe l'ame.","Belle journee pour vivre.","Que faire maintenant ?","Les esprits sont clemants.","Le vent porte des nouvelles."],
+  elder:   ["Je me souviens de l'ancien temps...","Jadis, les forets etaient plus vastes.","Enseigne aux jeunes.","Les etoiles nous parlent."],
+  shaman:  ["Les esprits murmurent.","Une vision... une mise en garde.","Le monde des morts est proche.","L'equilibre est fragile."],
+};
+
+function getThought(e) {
+  const pool = THOUGHTS[e.state] || THOUGHTS[e.role] || THOUGHTS.idle;
+  if(!e._thoughtIdx || Math.random()<0.01) e._thoughtIdx = Math.floor(Math.random()*pool.length);
+  return pool[e._thoughtIdx % pool.length];
+}
+
 function chooseNextAction(e, season) {
   const tribe = G.tribes[e.tribeIdx];
   const hungry = e.hunger < 40 || tribe.food < 20;
+  const isNight = (G.tick % 120) > 90;
+  const isWinter = G.seasonIdx === 3;
 
-  // Fight if at war
+  // Update thought
+  e.thought = getThought(e);
+
+  // Elders rest more, tell stories near fire
+  if(e.role==='elder') {
+    if(Math.random()<0.6) {
+      e.thought = THOUGHTS.elder[Math.floor(Math.random()*THOUGHTS.elder.length)];
+      e.state='idle'; e.stateTimer=60+Math.floor(Math.random()*80);
+      // Wander slowly near camp
+      e.tx=tribe.cx+(Math.random()-0.5)*3; e.ty=tribe.cy+(Math.random()-0.5)*3;
+      e.state='walk'; return;
+    }
+  }
+
+  // Shaman performs rituals near firepit
+  if(e.role==='shaman') {
+    e.thought = THOUGHTS.shaman[Math.floor(Math.random()*THOUGHTS.shaman.length)];
+    const fp = G.buildings.find(b=>b.tribeIdx===e.tribeIdx&&b.kind==='firepit'&&b.progress>=b.hp);
+    if(fp) { e.tx=fp.tx+(Math.random()-0.5); e.ty=fp.ty+(Math.random()-0.5); e.state='walk'; return; }
+  }
+
+  // Night: everyone sleeps near firepit
+  if(isNight) { e.state='sleep'; e.stateTimer=30+Math.floor(Math.random()*40); return; }
+
+  // Fight if at war (guards & hunters)
   if(e.role==='guard' || e.role==='hunter') {
     for(let t2=0;t2<G.tribes.length;t2++) {
       if(t2===e.tribeIdx) continue;
       if(getDiplo(e.tribeIdx,t2)==='war') {
-        const enemy = G.entities.find(h=>h.tribeIdx===t2 && h.hp>0 && dist(e,h)<8);
-        if(enemy) {
-          e.state='fight'; e.target=enemy.id;
-          return;
-        }
+        const enemy = G.entities.find(h=>h.tribeIdx===t2 && h.hp>0 && dist(e,h)<10);
+        if(enemy) { e.state='fight'; e.target=enemy.id; e.thought="⚔ Pour ma tribu !"; return; }
       }
     }
+  }
+
+  // Fisher: go to water tiles
+  if(e.role==='fisher' && season.gatherMod > 0.05) {
+    const fishAnimals = G.animals.filter(a=>a.alive&&a.onWater&&dist(e,a)<15);
+    if(fishAnimals.length>0) {
+      e.state='hunt'; e.target=fishAnimals[0].id; e.thought="J aperçois un poisson !"; return;
+    }
+    // Walk to water edge
+    let wx=e.x,wy=e.y;
+    for(let attempt=0;attempt<20;attempt++){
+      const tx=e.x+(Math.random()-0.5)*8, ty=e.y+(Math.random()-0.5)*8;
+      if(getTile(Math.floor(tx),Math.floor(ty))==='WATER'||getTile(Math.floor(tx),Math.floor(ty))==='SAND'){wx=tx;wy=ty;break;}
+    }
+    e.tx=wx; e.ty=wy; e.state='walk'; e.thought="Je marche vers la riviere..."; return;
   }
 
   // Hunt or gather for food
   if((hungry || Math.random()<0.3) && season.foodMod > 0.15) {
     if(e.role==='hunter' && G.animals.filter(a=>a.alive&&!a.onWater).length>0) {
-      const closeAnimals = G.animals.filter(a=>a.alive&&!a.onWater&&dist(e,a)<12)
+      const closeAnimals = G.animals.filter(a=>a.alive&&!a.onWater&&dist(e,a)<14)
         .sort((a,b)=>dist(e,a)-dist(e,b));
       if(closeAnimals.length>0) {
         e.state='hunt'; e.target=closeAnimals[0].id;
-        return;
+        e.thought=THOUGHTS.hunt[Math.floor(Math.random()*THOUGHTS.hunt.length)]; return;
       }
     }
-    // Gather
     if(season.gatherMod > 0.05) {
-      e.state='gather';
-      e.stateTimer = Math.floor(30+Math.random()*40/season.gatherMod);
-      // Walk to forest/grass
-      let gx=e.x+(Math.random()-0.5)*6, gy=e.y+(Math.random()-0.5)*6;
+      // Prefer forest/grass tiles for gathering
+      let gx=e.x,gy=e.y;
+      for(let attempt=0;attempt<15;attempt++){
+        const tx=tribe.cx+(Math.random()-0.5)*10, ty=tribe.cy+(Math.random()-0.5)*10;
+        const ttype=getTile(Math.floor(tx),Math.floor(ty));
+        if(ttype==='FOREST'||ttype==='GRASS'){gx=tx;gy=ty;break;}
+      }
       gx=Math.max(0,Math.min(W.COLS-1,gx)); gy=Math.max(0,Math.min(W.ROWS-1,gy));
       e.tx=gx; e.ty=gy; e.state='walk';
+      e.thought=THOUGHTS.gather[Math.floor(Math.random()*THOUGHTS.gather.length)];
       setTimeout(()=>{ if(e.state==='walk') e.state='gather'; },500);
       return;
     }
   }
 
+  // Winter: everyone tends to stay near fire
+  if(isWinter && Math.random()<0.4) {
+    const fp=G.buildings.find(b=>b.tribeIdx===e.tribeIdx&&b.kind==='firepit'&&b.progress>=b.hp);
+    if(fp){e.tx=fp.tx+(Math.random()-0.5)*2;e.ty=fp.ty+(Math.random()-0.5)*2;e.state='walk';e.thought="Le feu repousse le froid...";return;}
+  }
+
   // Build if builder
   if(e.role==='builder') {
     const unbuilt = G.buildings.find(b=>b.tribeIdx===e.tribeIdx && b.progress<b.hp);
-    if(unbuilt) { e.state='build'; e.buildTarget=unbuilt.id; return; }
+    if(unbuilt) { e.state='build'; e.buildTarget=unbuilt.id; e.thought=THOUGHTS.build[Math.floor(Math.random()*THOUGHTS.build.length)]; return; }
   }
 
-  // Idle wander
+  // Guard patrol around village perimeter
+  if(e.role==='guard') {
+    const angle=Math.random()*Math.PI*2;
+    const r=4+Math.random()*3;
+    e.tx=Math.max(0,Math.min(W.COLS-1,tribe.cx+Math.cos(angle)*r));
+    e.ty=Math.max(0,Math.min(W.ROWS-1,tribe.cy+Math.sin(angle)*r));
+    e.state='walk'; e.thought=THOUGHTS.guard[Math.floor(Math.random()*THOUGHTS.guard.length)]; return;
+  }
+
+  // Idle wander near camp
   e.state='walk';
-  e.tx = tribe.cx+(Math.random()-0.5)*6;
-  e.ty = tribe.cy+(Math.random()-0.5)*6;
+  e.tx = tribe.cx+(Math.random()-0.5)*8;
+  e.ty = tribe.cy+(Math.random()-0.5)*8;
   e.tx=Math.max(0,Math.min(W.COLS-1,e.tx));
   e.ty=Math.max(0,Math.min(W.ROWS-1,e.ty));
+  e.thought=THOUGHTS.idle[Math.floor(Math.random()*THOUGHTS.idle.length)];
 }
 
 function moveTowardTarget(e, spd) {
@@ -1448,6 +1530,15 @@ function render() {
 function updateTopBar() {
   document.getElementById('stat-year').textContent=`${G.year} BP`;
   document.getElementById('stat-day').textContent=G.day;
+  // Day/night sky overlay
+  const isNight = (G.tick % 120) > 90;
+  const s = SEASONS[G.seasonIdx];
+  const skyBg = document.getElementById('sky-bg');
+  if(isNight) {
+    skyBg.style.background = 'linear-gradient(180deg, #0a0820 0%, #1a1840 100%)';
+  } else {
+    skyBg.style.background = `linear-gradient(180deg, ${s.skyTop} 0%, ${s.skyBot} 100%)`;
+  }
   const totalPop=G.entities.length;
   document.getElementById('stat-pop').textContent=totalPop;
   const totalFood=G.tribes.reduce((s,t)=>s+t.food,0);
@@ -1636,11 +1727,15 @@ canvas.addEventListener('mousemove', e=>{
   if(hovered) {
     const h=hovered;
     if(h.type==='human') {
-      tt.innerHTML=`<div class="tt-name">${h.name}</div>
-        ${TRIBE_DEFS[h.tribeIdx].name}<br>
-        Rôle: ${h.role} | Age: ${h.age}<br>
+      const mood = h.hunger>60?'😊':h.hunger>30?'😐':'😰';
+      const seasonEffect = ['🌱','☀','🍂','❄'][G.seasonIdx];
+      tt.innerHTML=`<div class="tt-name">${h.name} ${mood}</div>
+        <b>${TRIBE_DEFS[h.tribeIdx].name}</b><br>
+        Rôle: <b>${h.role}</b> | Age: ${h.age}<br>
         Action: ${h.state}<br>
-        ❤ ${h.hp}/${h.maxHp} | 🍖 ${Math.floor(h.hunger)}`;
+        ❤ ${h.hp}/${h.maxHp} | 🍖 Faim: ${Math.floor(h.hunger)}%<br>
+        ${h.carrying?'<b>Porte: '+h.carrying+'</b><br>':''}<br>
+        <i style="color:#a0d0e0">${h.thought||'...'}</i>`;
     } else {
       tt.innerHTML=`<div class="tt-name">${h.name}</div>
         État: ${h.state}<br>❤ ${h.hp}`;
@@ -1723,7 +1818,7 @@ function blendColor(hex1, hex2, t) {
 
 // ── MAIN LOOP ─────────────────────────────────────────────────────
 let lastTick=0;
-const TICK_INTERVAL_MS = 200; // 5 ticks/s at speed 1
+const TICK_INTERVAL_MS = 150; // ~6 ticks/s at speed 1
 
 function loop(ts) {
   requestAnimationFrame(loop);
