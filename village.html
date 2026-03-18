@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Genesis Engine — Vue Village</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
 
   :root {
@@ -234,7 +233,7 @@
     <div id="season-badge" class="season-spring">🌱 PRINTEMPS</div>
     <div class="stat-pill"><span class="label">TEMP.</span><span class="val" id="stat-temp">14°C</span></div>
     <div class="stat-pill"><span class="label">BÂTIMENTS</span><span class="val" id="stat-buildings">3</span></div>
-    <div style="margin-left:auto; display:flex; gap:6px;">
+    <div style="margin-left:auto; display:flex; gap:6px;"><a href="index.html" style="padding:4px 10px;background:#1a2030;border:1px solid #e8a840;color:#e8a840;font-family:'Press Start 2P',monospace;font-size:6px;text-decoration:none;display:flex;align-items:center;">← MONDE DIVIN</a>
       <button class="action-btn" onclick="speedUp()">▶▶ VITESSE: <span id="speed-display">1x</span></button>
       <button class="action-btn" onclick="togglePause()">⏸ <span id="pause-txt">PAUSE</span></button>
     </div>
@@ -312,111 +311,9 @@
   </div>
 </div>
 
-
-/* Extra event log style */
-.event-entry { font-size:11px; padding:3px 5px; border-left:2px solid #4a5a6a; background:#0e1620; line-height:1.3; margin-bottom:2px; }
-.event-entry.hunt { border-color:#e08040; }
-.event-entry.gather { border-color:#60c870; }
-.event-entry.build { border-color:#8060e0; }
-.event-entry.war   { border-color:#e05050; }
-.event-entry.ally  { border-color:#60b0e0; }
-.event-entry.birth { border-color:#e8a840; }
-.event-entry.death { border-color:#505060; }
-.event-entry.season{ border-color:#a0c0e0; }
-</style>
-</head>
-<body>
-
-<div id="app">
-
-  <!-- TOP BAR -->
-  <div id="topbar">
-    <span class="title">⚙ GENESIS ENGINE</span>
-    <div class="stat-pill"><span class="label">AN</span><span class="val" id="stat-year">12400 BP</span></div>
-    <div class="stat-pill"><span class="label">JOUR</span><span class="val" id="stat-day">1</span></div>
-    <div class="stat-pill"><span class="label">POP</span><span class="val" id="stat-pop">—</span></div>
-    <div class="stat-pill"><span class="label">NOURR.</span><span class="val" id="stat-food">—</span></div>
-    <div id="season-badge" class="season-spring">🌱 PRINTEMPS</div>
-    <div class="stat-pill"><span class="label">TEMP.</span><span class="val" id="stat-temp">14°C</span></div>
-    <div class="stat-pill"><span class="label">BÂTIMENTS</span><span class="val" id="stat-buildings">0</span></div>
-    <div style="margin-left:auto;display:flex;gap:6px;">
-      <a href="index.html" style="padding:5px 10px;background:#1a2030;border:1px solid #2a3a5a;color:#e8a840;font-family:'Press Start 2P',monospace;font-size:6px;text-decoration:none;display:flex;align-items:center;">← MONDE DIVIN</a>
-      <button class="action-btn" onclick="speedUp()">▶▶ VITESSE: <span id="speed-display">1x</span></button>
-      <button class="action-btn" onclick="togglePause()">⏸ <span id="pause-txt">PAUSE</span></button>
-    </div>
-  </div>
-
-  <div id="main">
-    <!-- CANVAS -->
-    <div id="canvas-wrap">
-      <div id="sky-bg"></div>
-      <div id="season-overlay"></div>
-      <canvas id="gameCanvas"></canvas>
-
-      <!-- View toggle -->
-      <div id="view-toggle">
-        <button class="view-btn active" id="btn-village" onclick="setView('village')">🏘 VILLAGE</button>
-        <button class="view-btn" id="btn-world" onclick="setView('world')">🗺 MONDE</button>
-      </div>
-
-      <!-- Diplomacy panel -->
-      <div id="diplomacy-panel">
-        <h4>⚔ DIPLOMATIE</h4>
-        <div id="diplo-list"></div>
-      </div>
-
-      <!-- Zoom controls -->
-      <div id="zoom-controls">
-        <button class="zoom-btn" onclick="changeZoom(0.5)">−</button>
-        <button class="zoom-btn" onclick="changeZoom(-0.5)">+</button>
-      </div>
-
-      <!-- Selected entity info -->
-      <div id="selected-info">
-        <div class="si-name" id="si-name">—</div>
-        <div id="si-details"></div>
-      </div>
-    </div>
-
-    <!-- RIGHT PANEL -->
-    <div id="rightpanel">
-      <h3>🔥 TRIBUS</h3>
-      <div class="panel-section"><div id="tribe-list"></div></div>
-      <div class="panel-section" id="tribe-stats-section" style="display:none">
-        <h4>📊 STATISTIQUES</h4>
-        <div id="tribe-stats"></div>
-      </div>
-      <div class="panel-section">
-        <h4>⚔ ACTIONS</h4>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <button class="action-btn war-btn" onclick="startWar()" style="text-align:left">⚔ DÉCLARER GUERRE</button>
-          <button class="action-btn ally-btn" onclick="proposeAlliance()" style="text-align:left">🤝 PROPOSER ALLIANCE</button>
-          <button class="action-btn" onclick="sendHunters()" style="text-align:left">🏹 ENVOYER CHASSEURS</button>
-          <button class="action-btn" onclick="buildHouse()" style="text-align:left">🏠 CONSTRUIRE ABRI</button>
-        </div>
-      </div>
-      <h3 style="margin-top:auto">📜 ÉVÉNEMENTS</h3>
-      <div id="event-log-village"></div>
-    </div>
-  </div>
-
-  <!-- BOTTOM BAR -->
-  <div id="bottombar">
-    <span>🌍 GENESIS ENGINE v2 — VUE VILLAGE PIXEL ART</span>
-    <span style="color:#4a5a6a">|</span>
-    <span>CLIC: sélectionner entité</span>
-    <span style="color:#4a5a6a">|</span>
-    <span>DRAG: déplacer la vue</span>
-    <span style="color:#4a5a6a">|</span>
-    <span>MOLETTE: zoom</span>
-    <span style="margin-left:auto;color:#4a5a6a" id="coord-display">x:0 y:0</span>
-  </div>
-</div>
-
 <div id="tooltip"></div>
 
 <script>
-
 // ════════════════════════════════════════════════════════════════════
 //  GENESIS ENGINE — Village View
 //  Dawn of Man style pixel-art village simulation
@@ -1548,9 +1445,7 @@ function render() {
 
 // ── UI HELPERS ────────────────────────────────────────────────────
 function updateTopBar() {
-  document.getElementById('stat-year') && (document.getElementById('stat-year').textContent=`${G.year} BP`);
-  const vy=document.getElementById('v-stat-year'); if(vy) vy.textContent=`${G.year} BP`;
-  const vd=document.getElementById('v-stat-day'); if(vd) vd.textContent=G.day;
+  document.getElementById('stat-year').textContent=`${G.year} BP`;
   document.getElementById('stat-day').textContent=G.day;
   const totalPop=G.entities.length;
   document.getElementById('stat-pop').textContent=totalPop;
@@ -1839,115 +1734,129 @@ function loop(ts) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────────
-let villageBooted = false;
-function bootVillage() {
-  if(villageBooted) return;
-  villageBooted = true;
-  window.addEventListener('resize', ()=>{ resizeCanvas(); });
-  resizeCanvas();
-  initWorld();
-  updateSeasonVisuals();
-  updateTopBar();
-  selectTribe(0);
-  requestAnimationFrame(loop);
-}
+window.addEventListener('resize', ()=>{ resizeCanvas(); });
+resizeCanvas();
+initWorld();
+updateSeasonVisuals();
+updateTopBar();
+selectTribe(0);
+requestAnimationFrame(loop);
 
-// ── PATCH: sync events to village log ──
-const _origAddEventVillage = addEvent;
-window.addEvent = function(msg, type) {
-  _origAddEventVillage(msg, type);
-  const vlog = document.getElementById('event-log-village');
-  if(!vlog) return;
-  const div = document.createElement('div');
-  div.className = 'event-entry ' + (type||'');
-  div.style.cssText = 'font-size:11px;padding:3px 5px;border-left:2px solid #4a5a6a;background:#0e1620;line-height:1.3;margin-bottom:2px;';
-  div.innerHTML = '<span style="color:#4a5a6a;font-size:10px">J.'+G.day+'</span> ' + msg;
-  vlog.insertBefore(div, vlog.firstChild);
-  while(vlog.children.length > 60) vlog.removeChild(vlog.lastChild);
-};
-
-
-// ── CONNEXION BACKEND RAILWAY ──────────────────────────────────
+// ══════════════════════════════════════════════
+//  CONNEXION BACKEND RAILWAY
+// ══════════════════════════════════════════════
 const API_URL = "https://world-sim-production.up.railway.app";
 const WS_URL  = "wss://world-sim-production.up.railway.app/ws";
 let wsVillage = null;
+let backendConnected = false;
 
 function connectVillageBackend() {
   try {
     wsVillage = new WebSocket(WS_URL);
+    
     wsVillage.onopen = () => {
-      console.log('[Village] WebSocket connecté au backend Railway');
+      backendConnected = true;
+      addEvent('Connexion au monde établie.', 'season');
+      console.log('[Village] WebSocket connecté');
     };
+    
     wsVillage.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
         const data = msg.data || msg;
+        
+        // Sync time
         if(data.time) {
           G.year = data.time.year_bp || G.year;
           G.day  = data.time.day || G.day;
-          const si = data.time.season_index;
-          if(si !== undefined) G.seasonIdx = si % 4;
+          if(data.time.season_index !== undefined) {
+            G.seasonIdx = data.time.season_index % 4;
+            updateSeasonVisuals();
+          }
         }
+        
+        // Sync tribes
         if(data.tribes) {
           data.tribes.forEach(bt => {
             const local = G.tribes.find(t => t.idx === bt.id);
-            if(local) {
-              local.food  = bt.food  !== undefined ? bt.food  : local.food;
-              local.faith = bt.faith !== undefined ? bt.faith : local.faith;
-              local.pop   = bt.population || local.pop;
-              // Update members count
-              const diff = (bt.population||local.pop) - local.members.length;
-              if(diff > 0) {
-                for(let i=0;i<diff;i++) {
-                  const roles=['hunter','gatherer','gatherer','builder'];
-                  const h = mkHuman(local.idx,
-                    local.cx+(Math.random()-0.5)*4,
-                    local.cy+(Math.random()-0.5)*4,
-                    roles[Math.floor(Math.random()*roles.length)]);
-                  G.entities.push(h);
-                  local.members.push(h.id);
-                }
-              } else if(diff < 0 && local.members.length > 2) {
-                for(let i=0;i<Math.min(-diff, local.members.length-2);i++) {
-                  const id = local.members.pop();
-                  const idx = G.entities.findIndex(e=>e.id===id);
-                  if(idx>=0) G.entities.splice(idx,1);
-                }
+            if(!local) return;
+            local.food  = bt.food  !== undefined ? bt.food  : local.food;
+            local.faith = bt.faith !== undefined ? bt.faith : local.faith;
+            const targetPop = bt.population || 0;
+            const currentPop = local.members.length;
+            const diff = targetPop - currentPop;
+            if(diff > 0) {
+              for(let i=0;i<Math.min(diff,5);i++) {
+                const roles=['hunter','gatherer','gatherer','builder'];
+                const h = mkHuman(local.idx,
+                  local.cx+(Math.random()-0.5)*4,
+                  local.cy+(Math.random()-0.5)*4,
+                  roles[Math.floor(Math.random()*roles.length)]);
+                G.entities.push(h);
+                local.members.push(h.id);
+                local.pop++;
               }
-              local.pop = local.members.length;
+            } else if(diff < 0) {
+              for(let i=0;i<Math.min(-diff,3);i++) {
+                if(local.members.length <= 2) break;
+                const id = local.members.pop();
+                const idx = G.entities.findIndex(e=>e.id===id);
+                if(idx>=0) G.entities.splice(idx,1);
+                local.pop--;
+              }
             }
           });
+          buildTribeList();
         }
-        if(data.event_log) {
-          data.event_log.slice(0,2).forEach(ev => {
-            if(ev && ev.text) addEvent(ev.text, ev.color||'season');
-          });
+        
+        // Sync events (only new ones)
+        if(data.event_log && data.event_log.length > 0) {
+          const latest = data.event_log[0];
+          if(latest && latest.text) {
+            addEvent(latest.text, latest.color || 'season');
+          }
         }
+        
+        // Sync wars
         if(data.wars && data.wars.active_wars) {
           data.wars.active_wars.forEach(w => {
-            setDiplo(w.attacker_id, w.defender_id, 'war');
+            if(getDiplo(w.attacker_id, w.defender_id) !== 'war') {
+              setDiplo(w.attacker_id, w.defender_id, 'war');
+            }
           });
           buildDiploPanel();
         }
+        
         updateTopBar();
-        updateSeasonVisuals();
-      } catch(err) { console.warn('[Village] Parse error:', err); }
+      } catch(err) {
+        console.warn('[Village] Parse error:', err);
+      }
     };
+    
     wsVillage.onclose = () => {
-      console.log('[Village] WebSocket fermé — reconnexion dans 5s');
+      backendConnected = false;
+      console.log('[Village] Déconnecté — reconnexion 5s');
       setTimeout(connectVillageBackend, 5000);
     };
+    
     wsVillage.onerror = () => {
-      console.log('[Village] Backend inaccessible — simulation locale');
+      console.log('[Village] Backend inaccessible — mode local actif');
     };
-  } catch(e) {
-    console.log('[Village] Pas de backend');
+  } catch(ex) {
+    console.log('[Village] Erreur WS:', ex);
   }
 }
 
-// Boot + connect
-bootVillage();
+// Indicateur connexion
+const _connDot = document.createElement('div');
+_connDot.style.cssText = 'position:fixed;bottom:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#333;z-index:9999;transition:background 0.5s;';
+document.body.appendChild(_connDot);
+setInterval(() => {
+  _connDot.style.background = backendConnected ? '#4a8a4a' : '#444';
+}, 1000);
+
 connectVillageBackend();
+
 </script>
 </body>
 </html>
