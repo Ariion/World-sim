@@ -3,28 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Genesis Engine — Divine Dashboard</title>
+<title>Genesis Engine — Monde Divin</title>
+<link rel="stylesheet" href="shared.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
-
-  :root {
-    --stone: #1a1610;
-    --parchment: #c8a96e;
-    --parchment-dark: #8b6f3a;
-    --parchment-light: #e8d5a3;
-    --divine: #f0c060;
-    --divine-glow: rgba(240,192,96,0.15);
-    --blood: #8b2020;
-    --forest: #2d4a1e;
-    --water: #1a3a5c;
-    --mountain: #4a3f35;
-    --prayer: #6a4a8a;
-    --panel-bg: rgba(15,12,8,0.92);
-    --border: rgba(200,169,110,0.3);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     background: var(--stone);
     color: var(--parchment-light);
@@ -35,88 +16,41 @@
     cursor: crosshair;
   }
 
-  /* ── LAYOUT ── */
   #app {
     display: grid;
     grid-template-columns: 280px 1fr 300px;
     grid-template-rows: 48px 1fr 140px;
     height: 100vh;
-    width: 100vw;
   }
 
   /* ── TOPBAR ── */
   #topbar {
     grid-column: 1 / -1;
-    background: linear-gradient(90deg, #0a0805 0%, #1a140a 40%, #0a0805 100%);
+    background: linear-gradient(90deg, #0a0805, #1a140a, #0a0805);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    padding: 0 20px;
-    gap: 32px;
-    position: relative;
+    padding: 0 16px;
+    gap: 20px;
     z-index: 10;
   }
-
   #topbar h1 {
     font-family: 'Cinzel', serif;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
     color: var(--divine);
     letter-spacing: 4px;
     text-shadow: 0 0 20px rgba(240,192,96,0.5);
     flex-shrink: 0;
   }
-
-  .top-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-  .top-stat label {
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--parchment-dark);
-    text-transform: uppercase;
-    font-family: 'Cinzel', serif;
-  }
-  .top-stat value {
-    font-size: 14px;
-    color: var(--parchment-light);
-    font-weight: 600;
-  }
-
-  #divine-energy-bar {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  #divine-energy-bar label {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--divine);
-  }
-  .energy-track {
-    width: 160px;
-    height: 6px;
-    background: rgba(240,192,96,0.1);
-    border: 1px solid rgba(240,192,96,0.3);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .energy-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #c88020, #f0c060);
-    border-radius: 3px;
-    transition: width 1s ease;
-    box-shadow: 0 0 8px rgba(240,192,96,0.4);
-  }
-  #energy-val {
-    font-size: 12px;
-    color: var(--divine);
-    min-width: 32px;
-  }
+  .top-stat { display:flex; flex-direction:column; gap:1px; }
+  .top-stat label { font-size:9px; letter-spacing:2px; color:var(--parchment-dark); text-transform:uppercase; font-family:'Cinzel',serif; }
+  .top-stat value { font-size:14px; color:var(--parchment-light); font-weight:600; }
+  #divine-energy-bar { margin-left:auto; display:flex; align-items:center; gap:10px; }
+  #divine-energy-bar label { font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; color:var(--divine); }
+  .energy-track { width:160px; height:6px; background:rgba(240,192,96,0.1); border:1px solid rgba(240,192,96,0.3); border-radius:3px; overflow:hidden; }
+  .energy-fill { height:100%; background:linear-gradient(90deg,#c88020,#f0c060); border-radius:3px; transition:width 1s ease; box-shadow:0 0 8px rgba(240,192,96,0.4); }
+  #energy-val { font-size:12px; color:var(--divine); min-width:32px; }
 
   /* ── LEFT PANEL ── */
   #left-panel {
@@ -126,504 +60,110 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
+  .panel-title { font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; color:var(--parchment-dark); text-transform:uppercase; border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:4px; }
+  .tribe-card { background:rgba(255,255,255,0.03); border:1px solid rgba(200,169,110,0.15); border-radius:4px; padding:10px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+  .tribe-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--tribe-color,var(--parchment)); border-radius:4px 0 0 4px; }
+  .tribe-card:hover { background:rgba(255,255,255,0.06); }
+  .tribe-card.selected { background:rgba(240,192,96,0.07); border-color:rgba(240,192,96,0.4); }
+  .tribe-name { font-family:'Cinzel',serif; font-size:13px; color:var(--parchment-light); margin-bottom:6px; }
+  .tribe-stats { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+  .t-stat { font-size:11px; color:var(--parchment-dark); }
+  .t-stat span { color:var(--parchment-light); }
+  .tribe-bar { margin-top:6px; height:3px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+  .tribe-bar-fill { height:100%; border-radius:2px; transition:width 2s ease; }
+  .faith-fill { background:linear-gradient(90deg,#4a2a6a,#8a50b8); }
+  .food-fill  { background:linear-gradient(90deg,#2a4a1a,#5a9a3a); }
+  .status-badge { display:inline-block; font-size:9px; font-family:'Cinzel',serif; letter-spacing:1px; padding:2px 6px; border-radius:2px; margin-top:5px; }
+  .status-ok   { background:rgba(80,140,60,0.25); color:#8acc70; border:1px solid rgba(80,140,60,0.4); }
+  .status-warn { background:rgba(180,120,20,0.25); color:#e8a840; border:1px solid rgba(180,120,20,0.4); }
+  .status-crit { background:rgba(140,30,30,0.25); color:#e05050; border:1px solid rgba(140,30,30,0.4); }
+  .status-pray { background:rgba(80,30,100,0.25); color:#b070e0; border:1px solid rgba(80,30,100,0.4); }
+  #tribe-detail { background:rgba(240,192,96,0.04); border:1px solid rgba(240,192,96,0.15); border-radius:4px; padding:12px; font-size:12px; line-height:1.6; color:var(--parchment-dark); display:none; }
+  #tribe-detail.active { display:block; }
+  #tribe-detail strong { color:var(--parchment-light); }
 
-  .panel-title {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--parchment-dark);
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 6px;
-    margin-bottom: 4px;
-  }
-
-  /* ── TRIBE CARDS ── */
-  .tribe-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(200,169,110,0.15);
-    border-radius: 4px;
-    padding: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .tribe-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--tribe-color, var(--parchment));
-    border-radius: 4px 0 0 4px;
-  }
-  .tribe-card:hover {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(200,169,110,0.35);
-  }
-  .tribe-card.selected {
-    background: rgba(240,192,96,0.07);
-    border-color: rgba(240,192,96,0.4);
-  }
-  .tribe-name {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    color: var(--parchment-light);
-    margin-bottom: 6px;
-  }
-  .tribe-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-  }
-  .t-stat {
-    font-size: 11px;
-    color: var(--parchment-dark);
-  }
-  .t-stat span {
-    color: var(--parchment-light);
-  }
-  .tribe-bar {
-    margin-top: 6px;
-    height: 3px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .tribe-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 2s ease;
-  }
-  .faith-fill { background: linear-gradient(90deg, #4a2a6a, #8a50b8); }
-  .food-fill  { background: linear-gradient(90deg, #2a4a1a, #5a9a3a); }
-
-  .status-badge {
-    display: inline-block;
-    font-size: 9px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 1px;
-    padding: 2px 6px;
-    border-radius: 2px;
-    margin-top: 5px;
-  }
-  .status-ok    { background: rgba(80,140,60,0.25); color: #8acc70; border: 1px solid rgba(80,140,60,0.4); }
-  .status-warn  { background: rgba(180,120,20,0.25); color: #e8a840; border: 1px solid rgba(180,120,20,0.4); }
-  .status-crit  { background: rgba(140,30,30,0.25); color: #e05050; border: 1px solid rgba(140,30,30,0.4); }
-  .status-pray  { background: rgba(80,30,100,0.25); color: #b070e0; border: 1px solid rgba(80,30,100,0.4); }
-
-  /* ── CENTER : THREE.JS CANVAS ── */
-  #map-container {
-    position: relative;
-    overflow: hidden;
-    background: #080604;
-  }
-  #three-canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  /* ── MAP OVERLAY INFO ── */
-  #map-overlay {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    display: flex;
-    gap: 8px;
-    pointer-events: none;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: rgba(200,169,110,0.6);
-    font-family: 'Cinzel', serif;
-    letter-spacing: 1px;
-  }
-  .legend-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-  }
-
-  #time-display {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: rgba(240,192,96,0.7);
-    text-shadow: 0 0 10px rgba(240,192,96,0.3);
-    pointer-events: none;
-    background: rgba(0,0,0,0.4);
-    padding: 4px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(240,192,96,0.15);
-  }
+  /* ── MAP ── */
+  #map-container { position:relative; overflow:hidden; background:#080604; }
+  #three-canvas  { width:100%!important; height:100%!important; }
+  #territory-canvas { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; opacity:0.18; }
+  #time-display { position:absolute; top:12px; left:50%; transform:translateX(-50%); font-family:'Cinzel',serif; font-size:12px; letter-spacing:3px; color:rgba(240,192,96,0.7); pointer-events:none; background:rgba(0,0,0,0.4); padding:4px 14px; border-radius:20px; border:1px solid rgba(240,192,96,0.15); }
+  #map-overlay { position:absolute; bottom:12px; left:12px; display:flex; gap:8px; pointer-events:none; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:rgba(200,169,110,0.6); font-family:'Cinzel',serif; letter-spacing:1px; }
+  .legend-dot  { width:8px; height:8px; border-radius:50%; }
+  .map-label { position:absolute; pointer-events:none; font-family:'Cinzel',serif; font-size:9px; letter-spacing:1px; color:rgba(200,169,110,0.5); text-shadow:0 0 4px rgba(0,0,0,0.8); transform:translate(-50%,-50%); white-space:nowrap; }
 
   /* ── RIGHT PANEL ── */
-  #right-panel {
-    background: var(--panel-bg);
-    border-left: 1px solid var(--border);
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  /* ── PRAYER INBOX ── */
-  .prayer-item {
-    background: rgba(106,74,138,0.1);
-    border: 1px solid rgba(106,74,138,0.25);
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .prayer-item:hover {
-    background: rgba(106,74,138,0.2);
-  }
-  .prayer-item.new::after {
-    content: '●';
-    position: absolute;
-    top: 8px; right: 8px;
-    color: var(--prayer);
-    font-size: 8px;
-    animation: pulse 2s infinite;
-  }
-  .prayer-tribe {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--parchment-dark);
-    margin-bottom: 4px;
-  }
-  .prayer-text {
-    font-size: 12px;
-    color: var(--parchment-light);
-    font-style: italic;
-    line-height: 1.4;
-    margin-bottom: 6px;
-  }
-  .prayer-intensity {
-    display: flex;
-    gap: 2px;
-  }
-  .prayer-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: rgba(106,74,138,0.3);
-  }
-  .prayer-dot.active {
-    background: var(--prayer);
-    box-shadow: 0 0 4px var(--prayer);
-  }
-  .prayer-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .prayer-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 1px;
-    padding: 3px 8px;
-    border-radius: 2px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-sign    { background: rgba(240,192,96,0.15); color: var(--divine); border: 1px solid rgba(240,192,96,0.3); }
-  .btn-dream   { background: rgba(80,60,120,0.25); color: #a080e0; border: 1px solid rgba(80,60,120,0.4); }
-  .btn-ignore  { background: rgba(80,80,80,0.15); color: #666; border: 1px solid rgba(80,80,80,0.2); }
-  .btn-wrath   { background: rgba(140,30,30,0.25); color: #e05050; border: 1px solid rgba(140,30,30,0.4); }
-  .prayer-btn:hover { filter: brightness(1.3); transform: translateY(-1px); }
-
-  /* ── EVENT LOG ── */
-  .event-item {
-    font-size: 11px;
-    color: var(--parchment-dark);
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(200,169,110,0.07);
-    line-height: 1.4;
-    display: flex;
-    gap: 8px;
-  }
-  .event-time {
-    color: rgba(200,169,110,0.35);
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .event-text em { color: var(--parchment-light); font-style: normal; }
-  .event-divine { color: var(--divine) !important; }
-  .event-death  { color: #e05050 !important; }
-  .event-birth  { color: #8acc70 !important; }
-  .event-faith  { color: #b070e0 !important; }
+  #right-panel { background:var(--panel-bg); border-left:1px solid var(--border); overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .prayer-item { background:rgba(106,74,138,0.1); border:1px solid rgba(106,74,138,0.25); border-radius:4px; padding:10px; margin-bottom:8px; transition:all 0.2s; position:relative; }
+  .prayer-item.new::after { content:'●'; position:absolute; top:8px; right:8px; color:var(--prayer); font-size:8px; animation:pulse 2s infinite; }
+  .prayer-tribe { font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; color:var(--parchment-dark); margin-bottom:4px; }
+  .prayer-text  { font-size:12px; color:var(--parchment-light); font-style:italic; line-height:1.4; margin-bottom:6px; }
+  .prayer-intensity { display:flex; gap:2px; }
+  .prayer-dot   { width:6px; height:6px; border-radius:50%; background:rgba(106,74,138,0.3); }
+  .prayer-dot.active { background:var(--prayer); box-shadow:0 0 4px var(--prayer); }
+  .prayer-actions { display:flex; gap:6px; margin-top:8px; }
+  .prayer-btn   { font-family:'Cinzel',serif; font-size:9px; letter-spacing:1px; padding:3px 8px; border-radius:2px; border:none; cursor:pointer; transition:all 0.15s; }
+  .btn-sign     { background:rgba(240,192,96,0.15); color:var(--divine); border:1px solid rgba(240,192,96,0.3); }
+  .btn-dream    { background:rgba(80,60,120,0.25); color:#a080e0; border:1px solid rgba(80,60,120,0.4); }
+  .btn-ignore   { background:rgba(80,80,80,0.15); color:#666; border:1px solid rgba(80,80,80,0.2); }
+  .btn-wrath    { background:rgba(140,30,30,0.25); color:#e05050; border:1px solid rgba(140,30,30,0.4); }
+  .prayer-btn:hover { filter:brightness(1.3); transform:translateY(-1px); }
+  .event-item { font-size:11px; color:var(--parchment-dark); padding:4px 0; border-bottom:1px solid rgba(200,169,110,0.07); line-height:1.4; display:flex; gap:8px; }
+  .event-time { color:rgba(200,169,110,0.35); font-family:'Cinzel',serif; font-size:9px; flex-shrink:0; margin-top:2px; }
+  .event-text em { color:var(--parchment-light); font-style:normal; }
+  .event-divine { color:var(--divine)!important; }
+  .event-death  { color:#e05050!important; }
+  .event-birth  { color:#8acc70!important; }
+  .event-faith  { color:#b070e0!important; }
+  .war-panel { background:rgba(100,15,15,0.15); border:1px solid rgba(200,50,50,0.2); border-radius:4px; padding:10px; margin-bottom:8px; }
+  .war-title { font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; color:#e05050; margin-bottom:6px; }
+  .war-item  { font-size:11px; color:#cc8080; line-height:1.5; padding:4px 0; border-bottom:1px solid rgba(200,50,50,0.1); }
+  .war-item em { color:#ff9090; font-style:normal; }
+  .war-badge { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-family:'Cinzel',serif; padding:2px 7px; border-radius:2px; margin-top:5px; background:rgba(140,20,20,0.3); color:#ff6060; border:1px solid rgba(200,50,50,0.4); animation:pulse 1.5s infinite; }
 
   /* ── BOTTOM BAR ── */
-  #bottom-bar {
-    grid-column: 1 / -1;
-    background: linear-gradient(90deg, #0a0805 0%, #120e08 50%, #0a0805 100%);
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: stretch;
-    padding: 0 20px;
-    gap: 24px;
-    overflow: hidden;
-  }
-
-  .bottom-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    padding: 10px 0;
-    min-width: 120px;
-  }
-  .bottom-section label {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--parchment-dark);
-    text-transform: uppercase;
-  }
-
-  /* ── DIVINE ACTIONS ── */
-  .divine-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-  }
-  .divine-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    border-radius: 3px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .divine-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-  }
-  .divine-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
-  .divine-btn:active { transform: translateY(0); }
-
-  .btn-miracle  { background: linear-gradient(135deg, #3a2a10, #5a4020); color: var(--divine); border: 1px solid rgba(240,192,96,0.3); }
-  .btn-prophet  { background: linear-gradient(135deg, #1a1a3a, #2a2a5a); color: #a0a0f0; border: 1px solid rgba(100,100,240,0.3); }
-  .btn-disaster { background: linear-gradient(135deg, #2a1010, #4a1a1a); color: #e06060; border: 1px solid rgba(200,60,60,0.3); }
-  .btn-bless    { background: linear-gradient(135deg, #1a2a1a, #2a4a2a); color: #80c870; border: 1px solid rgba(80,180,80,0.3); }
-  .cost-badge {
-    font-size: 8px;
-    color: rgba(240,192,96,0.6);
-    display: block;
-    text-align: center;
-    margin-top: 2px;
-  }
-
-  /* ── SEASON INDICATOR ── */
-  .season-ring {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    position: relative;
-  }
-  .season-ring::after {
-    content: attr(data-season);
-    position: absolute;
-    bottom: -16px;
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 1px;
-    color: var(--parchment-dark);
-    white-space: nowrap;
-  }
-
-
-  /* ── GUERRE V2 ── */
-  .war-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 9px; font-family: 'Cinzel', serif; letter-spacing: 1px;
-    padding: 2px 7px; border-radius: 2px; margin-top: 5px;
-    background: rgba(140,20,20,0.3); color: #ff6060;
-    border: 1px solid rgba(200,50,50,0.4);
-    animation: pulse 1.5s infinite;
-  }
-  .war-panel {
-    background: rgba(100,15,15,0.15);
-    border: 1px solid rgba(200,50,50,0.2);
-    border-radius: 4px; padding: 10px; margin-bottom: 8px;
-  }
-  .war-title {
-    font-family: 'Cinzel', serif; font-size: 10px;
-    letter-spacing: 2px; color: #e05050; margin-bottom: 6px;
-  }
-  .war-item {
-    font-size: 11px; color: #cc8080; line-height: 1.5;
-    padding: 4px 0; border-bottom: 1px solid rgba(200,50,50,0.1);
-  }
-  .war-item em { color: #ff9090; font-style: normal; }
-
-  /* ── TERRITORY OVERLAY ── */
-  #territory-canvas {
-    position: absolute; top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none; opacity: 0.18;
-  }
-
-  /* ── PLACE NAMES ── */
-  .map-label {
-    position: absolute; pointer-events: none;
-    font-family: 'Cinzel', serif; font-size: 9px;
-    letter-spacing: 1px; color: rgba(200,169,110,0.5);
-    text-shadow: 0 0 4px rgba(0,0,0,0.8);
-    transform: translate(-50%, -50%);
-    white-space: nowrap;
-  }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* ── TOOLTIP ── */
-  #tooltip {
-    position: fixed;
-    background: rgba(10,8,5,0.95);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 12px;
-    color: var(--parchment-light);
-    pointer-events: none;
-    z-index: 1000;
-    display: none;
-    max-width: 200px;
-    font-family: 'Crimson Text', serif;
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-  @keyframes glow-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes divine-flash {
-    0%   { box-shadow: 0 0 0 rgba(240,192,96,0); }
-    50%  { box-shadow: 0 0 40px rgba(240,192,96,0.4); }
-    100% { box-shadow: 0 0 0 rgba(240,192,96,0); }
-  }
-  .animate-in { animation: glow-in 0.4s ease forwards; }
-
-  /* ── SELECTED TRIBE PANEL ── */
-  #tribe-detail {
-    background: rgba(240,192,96,0.04);
-    border: 1px solid rgba(240,192,96,0.15);
-    border-radius: 4px;
-    padding: 12px;
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--parchment-dark);
-    display: none;
-  }
-  #tribe-detail.active { display: block; animation: glow-in 0.3s ease; }
-  #tribe-detail strong { color: var(--parchment-light); }
-
-  /* ── NOTIFICATION TOAST ── */
-  #toast {
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-10px);
-    background: rgba(10,8,5,0.95);
-    border: 1px solid var(--divine);
-    border-radius: 4px;
-    padding: 10px 24px;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--divine);
-    text-shadow: 0 0 10px rgba(240,192,96,0.5);
-    opacity: 0;
-    transition: all 0.4s ease;
-    pointer-events: none;
-    z-index: 2000;
-    box-shadow: 0 0 20px rgba(240,192,96,0.15);
-  }
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  #bottom-bar { grid-column:1/-1; background:linear-gradient(90deg,#0a0805,#120e08,#0a0805); border-top:1px solid var(--border); display:flex; align-items:stretch; padding:0 20px; gap:24px; overflow:hidden; }
+  .bottom-section { display:flex; flex-direction:column; justify-content:center; gap:4px; padding:10px 0; min-width:120px; }
+  .bottom-section label { font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; color:var(--parchment-dark); text-transform:uppercase; }
+  .divine-actions { display:flex; align-items:center; gap:10px; margin-left:auto; }
+  .divine-btn { font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+  .divine-btn:hover { transform:translateY(-2px); filter:brightness(1.2); }
+  .btn-miracle  { background:linear-gradient(135deg,#3a2a10,#5a4020); color:var(--divine); border:1px solid rgba(240,192,96,0.3); }
+  .btn-prophet  { background:linear-gradient(135deg,#1a1a3a,#2a2a5a); color:#a0a0f0; border:1px solid rgba(100,100,240,0.3); }
+  .btn-disaster { background:linear-gradient(135deg,#2a1010,#4a1a1a); color:#e06060; border:1px solid rgba(200,60,60,0.3); }
+  .btn-bless    { background:linear-gradient(135deg,#1a2a1a,#2a4a2a); color:#80c870; border:1px solid rgba(80,180,80,0.3); }
+  .cost-badge   { font-size:8px; color:rgba(240,192,96,0.6); display:block; text-align:center; margin-top:2px; }
+  .season-ring  { width:48px; height:48px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; position:relative; }
+  .season-ring::after { content:attr(data-season); position:absolute; bottom:-16px; font-family:'Cinzel',serif; font-size:8px; letter-spacing:1px; color:var(--parchment-dark); white-space:nowrap; }
 </style>
 </head>
 <body>
-
 <div id="app">
 
-  <!-- TOPBAR -->
   <header id="topbar">
     <h1>✦ GENESIS ENGINE</h1>
-<a href="village.html" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:#e8a840;text-decoration:none;padding:6px 14px;border:1px solid rgba(240,192,96,0.3);border-radius:3px;margin-left:8px;">🏘 VUE VILLAGE</a>
-    <div class="top-stat">
-      <label>Année</label>
-      <value id="stat-year">12,400 BP</value>
-    </div>
-    <div class="top-stat">
-      <label>Population</label>
-      <value id="stat-pop">—</value>
-    </div>
-    <div class="top-stat">
-      <label>Tribus</label>
-      <value id="stat-tribes">—</value>
-    </div>
-    <div class="top-stat">
-      <label>Foi Globale</label>
-      <value id="stat-faith">—</value>
-    </div>
-    <div class="top-stat">
-      <label>Prières en attente</label>
-      <value id="stat-prayers">0</value>
-    </div>
+    <a href="village.html" class="nav-btn">🏘 VUE VILLAGE</a>
+    <div class="top-stat"><label>Année</label><value id="stat-year">12,400 BP</value></div>
+    <div class="top-stat"><label>Population</label><value id="stat-pop">—</value></div>
+    <div class="top-stat"><label>Tribus</label><value id="stat-tribes">—</value></div>
+    <div class="top-stat"><label>Foi</label><value id="stat-faith">—</value></div>
+    <div class="top-stat"><label>Prières</label><value id="stat-prayers">0</value></div>
     <div id="divine-energy-bar">
       <label>Énergie Divine</label>
-      <div class="energy-track">
-        <div class="energy-fill" id="energy-fill" style="width:72%"></div>
-      </div>
+      <div class="energy-track"><div class="energy-fill" id="energy-fill" style="width:72%"></div></div>
       <span id="energy-val">72</span>
     </div>
   </header>
 
-  <!-- LEFT PANEL : TRIBES -->
   <aside id="left-panel">
     <div class="panel-title">Tribus du Monde</div>
     <div id="tribes-list"></div>
     <div class="panel-title" style="margin-top:8px">Tribu Sélectionnée</div>
-    <div id="tribe-detail">Cliquez sur une tribu pour l'inspecter.</div>
+    <div id="tribe-detail">Cliquez sur une tribu.</div>
   </aside>
 
-  <!-- CENTER : MAP -->
   <main id="map-container">
     <canvas id="three-canvas"></canvas>
     <canvas id="territory-canvas"></canvas>
@@ -633,1351 +173,558 @@
       <div class="legend-item"><div class="legend-dot" style="background:#8a9a5a"></div>Plaine</div>
       <div class="legend-item"><div class="legend-dot" style="background:#5a7aaa"></div>Eau</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7a6a5a"></div>Montagne</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#c8a050; border-radius:50%"></div>Tribu</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c8a050;border-radius:50%"></div>Tribu</div>
     </div>
   </main>
 
-  <!-- RIGHT PANEL : PRAYERS + LOG -->
   <aside id="right-panel">
-
     <div class="panel-title" id="war-panel-title" style="display:none">⚔ Guerres en Cours</div>
     <div id="wars-list"></div>
     <div class="panel-title">📜 Prières Reçues</div>
-    <div id="prayers-list">
-      <div style="font-size:11px; color:var(--parchment-dark); font-style:italic;">
-        Les voix du monde s'élèvent vers vous...
-      </div>
-    </div>
-    <div class="panel-title" style="margin-top:8px">📖 Registre des Événements</div>
+    <div id="prayers-list"><div style="font-size:11px;color:var(--parchment-dark);font-style:italic;">Les voix du monde s'élèvent vers vous...</div></div>
+    <div class="panel-title" style="margin-top:8px">📖 Événements</div>
     <div id="event-log"></div>
   </aside>
 
-  <!-- BOTTOM BAR -->
   <footer id="bottom-bar">
     <div class="bottom-section">
       <label>Saison</label>
-      <div style="display:flex; align-items:center; gap:12px; margin-top:4px">
+      <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
         <div class="season-ring" id="season-ring" data-season="PRINTEMPS">🌱</div>
-        <div style="font-size:11px; color:var(--parchment-dark); line-height:1.6; margin-left:8px">
+        <div style="font-size:11px;color:var(--parchment-dark);line-height:1.6;margin-left:8px">
           <div>Jour <span id="day-num" style="color:var(--parchment-light)">1</span></div>
           <div>An <span id="year-num" style="color:var(--parchment-light)">12400</span> BP</div>
         </div>
       </div>
     </div>
-
     <div class="bottom-section">
-      <label>Vitesse Simulation</label>
-      <div style="display:flex; gap:6px; margin-top:6px">
+      <label>Vitesse</label>
+      <div style="display:flex;gap:6px;margin-top:6px">
         <button class="prayer-btn btn-sign" onclick="setSpeed(1)" id="speed-1">▶ ×1</button>
         <button class="prayer-btn btn-dream" onclick="setSpeed(5)" id="speed-5">▶▶ ×5</button>
-        <button class="prayer-btn" style="background:rgba(80,80,80,0.2); color:#888; border:1px solid rgba(80,80,80,0.3)" onclick="setSpeed(0)" id="speed-0">⏸</button>
+        <button class="prayer-btn" style="background:rgba(80,80,80,0.2);color:#888;border:1px solid rgba(80,80,80,0.3)" onclick="setSpeed(0)" id="speed-0">⏸</button>
       </div>
     </div>
-
     <div class="bottom-section">
-      <label>Condition Globale</label>
-      <div id="world-condition" style="font-size:13px; color:#8acc70; margin-top:4px; font-style:italic;">
-        Monde en équilibre primitif
-      </div>
+      <label>Condition</label>
+      <div id="world-condition" style="font-size:13px;color:#8acc70;margin-top:4px;font-style:italic;">Monde en équilibre primitif</div>
     </div>
-
     <div class="divine-actions">
-      <div>
-        <button class="divine-btn btn-bless" onclick="divineAction('bless')">☀ Bénédiction</button>
-        <span class="cost-badge">−5 énergie</span>
-      </div>
-      <div>
-        <button class="divine-btn btn-miracle" onclick="divineAction('miracle')">✦ Miracle</button>
-        <span class="cost-badge">−15 énergie</span>
-      </div>
-      <div>
-        <button class="divine-btn btn-prophet" onclick="divineAction('prophet')">☾ Prophète</button>
-        <span class="cost-badge">−25 énergie</span>
-      </div>
-      <div>
-        <button class="divine-btn btn-disaster" onclick="divineAction('disaster')">⚡ Fléau</button>
-        <span class="cost-badge">−20 énergie</span>
-      </div>
+      <div><button class="divine-btn btn-bless" onclick="divineAction('bless')">☀ Bénédiction</button><span class="cost-badge">−5 énergie</span></div>
+      <div><button class="divine-btn btn-miracle" onclick="divineAction('miracle')">✦ Miracle</button><span class="cost-badge">−15 énergie</span></div>
+      <div><button class="divine-btn btn-prophet" onclick="divineAction('prophet')">☾ Prophète</button><span class="cost-badge">−25 énergie</span></div>
+      <div><button class="divine-btn btn-disaster" onclick="divineAction('disaster')">⚡ Fléau</button><span class="cost-badge">−20 énergie</span></div>
     </div>
   </footer>
-
 </div>
 
-<div id="tooltip"></div>
+<div id="conn-dot"></div>
 <div id="toast"></div>
-
-<!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
 <script>
-// ═══════════════════════════════════════════════════════════════════
-//  GENESIS ENGINE V1 — SIMULATION FRONTEND
-//  Architecture: ECS léger + Three.js 2.5D + State global
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  GENESIS ENGINE — MONDE DIVIN
+// ═══════════════════════════════════════════════════
 
-// ── CONFIG ──────────────────────────────────────────────────────────
+const API_URL = "https://world-sim-production.up.railway.app";
+const WS_URL  = "wss://world-sim-production.up.railway.app/ws";
+
 const CONFIG = {
-  MAP_SIZE: 128,          // 128×128 tiles
-  TILE_SIZE: 1,
-  NUM_TRIBES: 5,
-  TICK_MS: 800,           // ms par tick (ajustable)
-  DAYS_PER_TICK: 3,
-  INITIAL_YEAR_BP: 12400,
-  MAX_TRIBE_POP: 45,
-  MIN_TRIBE_POP: 4,
-  FOOD_PER_HUNT: 12,
-  FOOD_PER_GATHER: 5,
-  FOOD_CONSUME_PER_DAY: 1.2,
-  FAITH_DECAY: 0.002,
+  MAP_SIZE: 128, TILE_SIZE: 1, NUM_TRIBES: 5,
+  TICK_MS: 800, DAYS_PER_TICK: 3, INITIAL_YEAR_BP: 12400,
+  MAX_TRIBE_POP: 45, MIN_TRIBE_POP: 4,
+  FOOD_PER_HUNT: 12, FOOD_PER_GATHER: 5,
+  FOOD_CONSUME_PER_DAY: 1.2, FAITH_DECAY: 0.002,
   PRAYER_FAITH_THRESHOLD: 0.45,
-  REPRODUCTION_THRESHOLD: 0.7,
 };
 
-// ── SIMULATION STATE ─────────────────────────────────────────────────
 const SIM = {
-  world: null,
-  tribes: [],
-  year: CONFIG.INITIAL_YEAR_BP,
-  day: 1,
-  season: 0,       // 0=spring 1=summer 2=autumn 3=winter
-  tick: 0,
-  speed: 1,
-  divineEnergy: 72,
-  pendingPrayers: [],
-  eventLog: [],
-  selectedTribe: null,
-  running: false,
+  world: null, tribes: [],
+  year: 12400, day: 1, season: 0, tick: 0, speed: 1,
+  divineEnergy: 72, pendingPrayers: [], eventLog: [],
+  selectedTribe: null, sunLight: null, _activeWars: [],
 };
 
 const TRIBE_NAMES = ["Enfants de l'Aube","Gardiens du Rocher","Peuple des Eaux","Fils de la Forêt","Clan du Vent","Chasseurs d'Étoiles","Tribu du Feu Vieux"];
-const TRIBE_COLORS = [0xe8a840, 0x60b8e0, 0x80c870, 0xe06868, 0xb878e0, 0x70d0c0, 0xf0d060];
-
+const TRIBE_COLORS = [0xe8a840,0x60b8e0,0x80c870,0xe06868,0xb878e0,0x70d0c0,0xf0d060];
 const PRAYERS = [
   ["Grand Esprit, l'hiver nous dévore. Protège nos enfants.", 0.9],
-  ["Seigneur du ciel, nos chasseurs reviennent les mains vides. Envie-nous ta grâce.", 0.7],
+  ["Nos chasseurs reviennent les mains vides. Envoie ta grâce.", 0.7],
   ["Ô Créateur, pourquoi as-tu frappé notre chef de maladie ?", 0.85],
   ["Nous t'offrons ce feu, Être sans nom. Vois notre dévotion.", 0.5],
-  ["Le tonnerre a parlé cette nuit. Est-ce ta voix, Grand Invisible ?", 0.6],
-  ["Nos morts réclament-ils notre sang ? Dis-nous comment apaiser les ombres.", 0.75],
-  ["Pourquoi les bêtes fuient-elles notre territoire depuis trois lunes ?", 0.65],
-  ["Maître des rêves, envoie-nous un signe dans les flammes.", 0.55],
-  ["La femme du chef a mis au monde un enfant aux yeux clairs. Est-ce ton signe ?", 0.4],
+  ["Le tonnerre a parlé cette nuit. Est-ce ta voix ?", 0.6],
+  ["Nos morts réclament-ils notre sang ? Dis-nous.", 0.75],
+  ["Pourquoi les bêtes fuient-elles notre territoire ?", 0.65],
+  ["Maître des rêves, envoie-nous un signe.", 0.55],
   ["Nous mourons de soif. Les rivières se taisent. Parle !", 0.95],
 ];
 
-// ── PERLIN NOISE (simplex-like) ──────────────────────────────────────
-function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-function lerp(a, b, t) { return a + t * (b - a); }
-const perm = (() => {
-  const p = Array.from({length:256}, (_,i)=>i);
-  for (let i=255;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [p[i],p[j]]=[p[j],p[i]]; }
-  return [...p,...p];
-})();
-function grad(h, x, y) {
-  const v = h & 3;
-  return (v===0?x+y:v===1?-x+y:v===2?x-y:-x-y);
-}
-function noise2(x, y) {
-  const X=Math.floor(x)&255, Y=Math.floor(y)&255;
-  x-=Math.floor(x); y-=Math.floor(y);
-  const u=fade(x), v=fade(y);
-  const a=perm[X]+Y, aa=perm[a], ab=perm[a+1];
-  const b=perm[X+1]+Y, ba=perm[b], bb=perm[b+1];
-  return lerp(lerp(grad(perm[aa],x,y),grad(perm[ba],x-1,y),u),
-              lerp(grad(perm[ab],x,y-1),grad(perm[bb],x-1,y-1),u),v);
-}
-function fbm(x, y, oct=5) {
-  let v=0, amp=0.5, freq=1, max=0;
-  for (let i=0;i<oct;i++) { v+=noise2(x*freq,y*freq)*amp; max+=amp; amp*=0.5; freq*=2.1; }
-  return v/max;
-}
+// ── NOISE ────────────────────────────────────────────
+function fade(t){return t*t*t*(t*(t*6-15)+10);}
+function lerp(a,b,t){return a+t*(b-a);}
+const perm=(()=>{const p=Array.from({length:256},(_,i)=>i);for(let i=255;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];}return[...p,...p];})();
+function grad(h,x,y){const v=h&3;return(v===0?x+y:v===1?-x+y:v===2?x-y:-x-y);}
+function noise2(x,y){const X=Math.floor(x)&255,Y=Math.floor(y)&255;x-=Math.floor(x);y-=Math.floor(y);const u=fade(x),v=fade(y);const a=perm[X]+Y,aa=perm[a],ab=perm[a+1];const b=perm[X+1]+Y,ba=perm[b],bb=perm[b+1];return lerp(lerp(grad(perm[aa],x,y),grad(perm[ba],x-1,y),u),lerp(grad(perm[ab],x,y-1),grad(perm[bb],x-1,y-1),u),v);}
+function fbm(x,y,oct=5){let v=0,amp=0.5,freq=1,max=0;for(let i=0;i<oct;i++){v+=noise2(x*freq,y*freq)*amp;max+=amp;amp*=0.5;freq*=2.1;}return v/max;}
 
-// ── MAP GENERATION ───────────────────────────────────────────────────
+// ── MAP ───────────────────────────────────────────────
 function generateWorld() {
-  const S = CONFIG.MAP_SIZE;
-  const tiles = new Array(S*S);
-  const heights = new Float32Array(S*S);
-
-  // Generate heightmap
-  const scale = 0.04;
-  for (let y=0;y<S;y++) for (let x=0;x<S;x++) {
-    const nx = x*scale, ny = y*scale;
-    let h = fbm(nx+3.1, ny+1.7, 6);
-    // Bowl shape: center lower (valleys)
-    const cx=(x-S/2)/(S/2), cy=(y-S/2)/(S/2);
-    h -= 0.15*(cx*cx+cy*cy);
-    heights[y*S+x] = h;
+  const S=CONFIG.MAP_SIZE, tiles=new Array(S*S), heights=new Float32Array(S*S);
+  const scale=0.04;
+  for(let y=0;y<S;y++) for(let x=0;x<S;x++){
+    const nx=x*scale,ny=y*scale;
+    let h=fbm(nx+3.1,ny+1.7,6);
+    const cx=(x-S/2)/(S/2),cy=(y-S/2)/(S/2);
+    h-=0.15*(cx*cx+cy*cy);
+    heights[y*S+x]=h;
   }
-
-  // Normalize
-  let mn=Infinity, mx=-Infinity;
-  for (let i=0;i<S*S;i++) { mn=Math.min(mn,heights[i]); mx=Math.max(mx,heights[i]); }
-  for (let i=0;i<S*S;i++) heights[i]=(heights[i]-mn)/(mx-mn);
-
-  // Moisture map
-  const moisture = new Float32Array(S*S);
-  for (let y=0;y<S;y++) for (let x=0;x<S;x++) {
-    moisture[y*S+x] = fbm(x*scale+10, y*scale+20, 4)*0.5+0.5;
+  let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<S*S;i++){mn=Math.min(mn,heights[i]);mx=Math.max(mx,heights[i]);}
+  for(let i=0;i<S*S;i++)heights[i]=(heights[i]-mn)/(mx-mn);
+  const moisture=new Float32Array(S*S);
+  for(let y=0;y<S;y++) for(let x=0;x<S;x++) moisture[y*S+x]=fbm(x*scale+10,y*scale+20,4)*0.5+0.5;
+  for(let i=0;i<S*S;i++){
+    const h=heights[i],m=moisture[i];
+    let biome,fertility=0,huntable=0;
+    if(h<0.30){biome='water';fertility=0;huntable=0.1;}
+    else if(h<0.35){biome='shore';fertility=0.6;huntable=0.4;}
+    else if(h<0.75){if(m>0.65){biome='forest';fertility=0.7;huntable=0.8;}else if(m>0.4){biome='plains';fertility=0.9;huntable=0.6;}else{biome='scrub';fertility=0.5;huntable=0.4;}}
+    else if(h<0.88){biome='highland';fertility=0.2;huntable=0.3;}
+    else{biome='mountain';fertility=0;huntable=0.1;}
+    tiles[i]={biome,h,m,fertility,huntable,resource:fertility*100};
   }
-
-  for (let i=0;i<S*S;i++) {
-    const h=heights[i], m=moisture[i];
-    let biome, fertility=0, huntable=0;
-    if (h<0.30)      { biome='water';    fertility=0;   huntable=0.1; }
-    else if (h<0.35) { biome='shore';    fertility=0.6; huntable=0.4; }
-    else if (h<0.75) {
-      if (m>0.65)    { biome='forest';   fertility=0.7; huntable=0.8; }
-      else if (m>0.4){ biome='plains';   fertility=0.9; huntable=0.6; }
-      else           { biome='scrub';    fertility=0.5; huntable=0.4; }
-    }
-    else if (h<0.88) { biome='highland'; fertility=0.2; huntable=0.3; }
-    else             { biome='mountain'; fertility=0.0; huntable=0.1; }
-    tiles[i] = { biome, h, m, fertility, huntable, resource: fertility*100 };
-  }
-
-  // River carving
-  const riverSeeds = 6;
-  for (let r=0;r<riverSeeds;r++) {
-    let x=Math.floor(Math.random()*20+54), y=Math.floor(Math.random()*20+54);
-    for (let step=0;step<80;step++) {
-      const i=y*S+x;
-      if (x<1||x>=S-1||y<1||y>=S-1) break;
-      if (tiles[i].biome==='water') break;
-      tiles[i].biome='river'; tiles[i].huntable=0.7; tiles[i].fertility=1.0;
-      // Flow downhill with noise
-      const candidates = [[x-1,y],[x+1,y],[x,y-1],[x,y+1]];
-      const valid = candidates.filter(([cx,cy])=>cx>=0&&cx<S&&cy>=0&&cy<S);
-      valid.sort((a,b)=>heights[b[1]*S+b[0]]-heights[a[1]*S+a[0]]);
-      const next = valid[0];
-      if (heights[next[1]*S+next[0]]>heights[y*S+x]-0.005) {
-        // Random walk if no downhill
-        const rnd=valid[Math.floor(Math.random()*valid.length)];
-        x=rnd[0]; y=rnd[1];
-      } else { x=next[0]; y=next[1]; }
-    }
-  }
-
-  return { tiles, size: S, heights };
+  return{tiles,size:S,heights};
 }
 
-// ── TRIBE INIT ───────────────────────────────────────────────────────
 function spawnTribes(world) {
-  const S = CONFIG.MAP_SIZE;
-  const tribes = [];
-  const usedPositions = [];
-
-  for (let t=0; t<CONFIG.NUM_TRIBES; t++) {
-    let tx, ty, attempts=0;
-    do {
-      tx = 10 + Math.floor(Math.random()*(S-20));
-      ty = 10 + Math.floor(Math.random()*(S-20));
-      const tile = world.tiles[ty*S+tx];
-      const tooClose = usedPositions.some(([px,py])=>Math.hypot(px-tx,py-ty)<18);
-      if (tile.biome!=='water' && tile.biome!=='mountain' && !tooClose) break;
-      attempts++;
-    } while (attempts<200);
-
-    usedPositions.push([tx,ty]);
-    const pop = 12 + Math.floor(Math.random()*10);
-    const members = Array.from({length:pop}, (_,i) => ({
-      id: t*100+i,
-      age: 10 + Math.floor(Math.random()*30),
-      hunger: 0.3 + Math.random()*0.3,
-      health: 0.7 + Math.random()*0.3,
-      faith: Math.random()*0.3,
-      role: i===0 ? 'chief' : Math.random()<0.5 ? 'hunter' : 'gatherer',
-      sex: Math.random()<0.5 ? 'M' : 'F',
-    }));
-
-    tribes.push({
-      id: t,
-      name: TRIBE_NAMES[t],
-      color: TRIBE_COLORS[t],
-      x: tx, y: ty,
-      vx: 0, vy: 0,
-      members,
-      food: 60 + Math.random()*40,
-      faith: 0.1 + Math.random()*0.2,
-      prayerCooldown: 0,
-      territory: 8 + Math.floor(Math.random()*4),
-      alive: true,
-      events: [],
-      memory: [], // collective memory
-      rituals: 0,
-    });
+  const S=CONFIG.MAP_SIZE,tribes=[],used=[];
+  for(let t=0;t<CONFIG.NUM_TRIBES;t++){
+    let tx,ty,attempts=0;
+    do{tx=10+Math.floor(Math.random()*(S-20));ty=10+Math.floor(Math.random()*(S-20));const tile=world.tiles[ty*S+tx];const tooClose=used.some(([px,py])=>Math.hypot(px-tx,py-ty)<18);if(tile.biome!=='water'&&tile.biome!=='mountain'&&!tooClose)break;attempts++;}while(attempts<200);
+    used.push([tx,ty]);
+    const pop=12+Math.floor(Math.random()*10);
+    const members=Array.from({length:pop},(_,i)=>({id:t*100+i,age:10+Math.floor(Math.random()*30),hunger:0.3+Math.random()*0.3,health:0.7+Math.random()*0.3,faith:Math.random()*0.3,role:i===0?'chief':Math.random()<0.5?'hunter':'gatherer',sex:Math.random()<0.5?'M':'F'}));
+    tribes.push({id:t,name:TRIBE_NAMES[t],color:TRIBE_COLORS[t],x:tx,y:ty,members,food:60+Math.random()*40,faith:0.1+Math.random()*0.2,prayerCooldown:0,territory:8+Math.floor(Math.random()*4),alive:true,events:[],rituals:0});
   }
   return tribes;
 }
 
-// ── THREE.JS RENDERER ────────────────────────────────────────────────
-let renderer, scene, camera, mapMesh, tribeMeshes=[], particleSystem;
-let raycaster, mouse;
-let camTarget = {x:64, y:0, z:64};
+// ── THREE.JS ──────────────────────────────────────────
+let renderer,scene,camera,mapMesh,tribeMeshes=[],particleSystem,raycaster,mouse;
 
 function initThree() {
-  const container = document.getElementById('map-container');
-  const W = container.clientWidth, H = container.clientHeight;
-
-  renderer = new THREE.WebGLRenderer({
-    canvas: document.getElementById('three-canvas'),
-    antialias: true,
-    alpha: false,
-  });
-  renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const container=document.getElementById('map-container');
+  const W=container.clientWidth,H=container.clientHeight;
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('three-canvas'),antialias:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
   renderer.setClearColor(0x080604);
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled=true;
+  scene=new THREE.Scene();
+  scene.fog=new THREE.Fog(0x080604,60,160);
 
-  scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x080604, 60, 160);
+  // ── CAMÉRA CENTRÉE SUR LE MONDE ──
+  const S = CONFIG.MAP_SIZE;
+  camera=new THREE.PerspectiveCamera(50,W/H,0.1,500);
+  camera.position.set(0, 60, 50);   // centré en x=0,z=0 qui correspond au milieu de la carte
+  camera.lookAt(0, 0, 0);
 
-  // Camera — angled top-down (2.5D feel)
-  camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 500);
-  camera.position.set(64, 55, 104);
-  camera.lookAt(64, 0, 64);
-
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-
-  // Lighting
-  const ambient = new THREE.AmbientLight(0x3a3020, 0.8);
-  scene.add(ambient);
-
-  const sun = new THREE.DirectionalLight(0xfff0d0, 1.2);
-  sun.position.set(30, 60, 20);
-  sun.castShadow = true;
-  sun.shadow.mapSize.width = 2048;
-  sun.shadow.mapSize.height = 2048;
+  raycaster=new THREE.Raycaster();
+  mouse=new THREE.Vector2();
+  scene.add(new THREE.AmbientLight(0x3a3020,0.8));
+  const sun=new THREE.DirectionalLight(0xfff0d0,1.2);
+  sun.position.set(30,60,20);
+  sun.castShadow=true;
   scene.add(sun);
-  SIM.sunLight = sun;
-
-  // Rim light (cool blue)
-  const rim = new THREE.DirectionalLight(0x203060, 0.4);
-  rim.position.set(-40, 30, -20);
+  SIM.sunLight=sun;
+  scene.add(Object.assign(new THREE.DirectionalLight(0x203060,0.4),{position:{set:()=>{}}}) );
+  const rim=new THREE.DirectionalLight(0x203060,0.4);
+  rim.position.set(-40,30,-20);
   scene.add(rim);
-
   buildMapMesh();
   buildTribeMeshes();
   buildParticles();
   setupCameraControls();
-
-  window.addEventListener('resize', onResize);
-  renderer.domElement.addEventListener('mousemove', onMouseMove);
-  renderer.domElement.addEventListener('click', onMapClick);
+  window.addEventListener('resize',onResize);
+  renderer.domElement.addEventListener('mousemove',onMouseMove);
+  renderer.domElement.addEventListener('click',onMapClick);
 }
 
-// ── BUILD MAP ────────────────────────────────────────────────────────
-const BIOME_COLORS = {
-  water:    [0.08, 0.20, 0.38],
-  shore:    [0.55, 0.55, 0.30],
-  river:    [0.15, 0.35, 0.55],
-  plains:   [0.42, 0.52, 0.24],
-  scrub:    [0.48, 0.45, 0.25],
-  forest:   [0.16, 0.30, 0.14],
-  highland: [0.38, 0.34, 0.28],
-  mountain: [0.55, 0.50, 0.44],
-};
+const BIOME_COLORS={water:[0.08,0.20,0.38],shore:[0.55,0.55,0.30],river:[0.15,0.35,0.55],plains:[0.42,0.52,0.24],scrub:[0.48,0.45,0.25],forest:[0.16,0.30,0.14],highland:[0.38,0.34,0.28],mountain:[0.55,0.50,0.44]};
 
 function buildMapMesh() {
-  if (mapMesh) { scene.remove(mapMesh); mapMesh.geometry.dispose(); }
-
-  const S = CONFIG.MAP_SIZE;
-  const geo = new THREE.PlaneGeometry(S, S, S-1, S-1);
+  if(mapMesh){scene.remove(mapMesh);mapMesh.geometry.dispose();}
+  const S=CONFIG.MAP_SIZE;
+  const geo=new THREE.PlaneGeometry(S,S,S-1,S-1);
   geo.rotateX(-Math.PI/2);
-
-  const pos = geo.attributes.position;
-  const colors = new Float32Array(pos.count*3);
-
-  for (let i=0; i<pos.count; i++) {
-    const x = Math.round(pos.getX(i) + S/2);
-    const z = Math.round(pos.getZ(i) + S/2);
-    const idx = Math.min(z,S-1)*S + Math.min(x,S-1);
-    const tile = SIM.world.tiles[idx];
-    const h = SIM.world.heights[idx];
-
-    // Elevation
-    pos.setY(i, h*8);
-
-    // Color
-    const bc = BIOME_COLORS[tile.biome] || [0.5,0.5,0.5];
-    // Variation by height
-    const v = 0.85 + h*0.3;
-    colors[i*3]   = bc[0]*v;
-    colors[i*3+1] = bc[1]*v;
-    colors[i*3+2] = bc[2]*v;
+  const pos=geo.attributes.position;
+  const colors=new Float32Array(pos.count*3);
+  for(let i=0;i<pos.count;i++){
+    const x=Math.round(pos.getX(i)+S/2);
+    const z=Math.round(pos.getZ(i)+S/2);
+    const idx=Math.min(z,S-1)*S+Math.min(x,S-1);
+    const tile=SIM.world.tiles[idx];
+    const h=SIM.world.heights[idx];
+    pos.setY(i,h*8);
+    const bc=BIOME_COLORS[tile.biome]||[0.5,0.5,0.5];
+    const v=0.85+h*0.3;
+    colors[i*3]=bc[0]*v; colors[i*3+1]=bc[1]*v; colors[i*3+2]=bc[2]*v;
   }
-
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute('color',new THREE.BufferAttribute(colors,3));
   geo.computeVertexNormals();
-
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
-  mapMesh = new THREE.Mesh(geo, mat);
-  mapMesh.receiveShadow = true;
+  mapMesh=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true}));
+  mapMesh.receiveShadow=true;
   scene.add(mapMesh);
 }
 
-// ── BUILD TRIBE MARKERS ──────────────────────────────────────────────
 function buildTribeMeshes() {
-  tribeMeshes.forEach(m => { scene.remove(m); if(m.geometry) m.geometry.dispose(); });
-  tribeMeshes = [];
-
-  SIM.tribes.forEach(tribe => {
-    if (!tribe.alive) return;
-    const group = new THREE.Group();
-
-    // Base: flat disc (camp)
-    const discGeo = new THREE.CylinderGeometry(1.2, 1.5, 0.15, 8);
-    const discMat = new THREE.MeshLambertMaterial({ color: tribe.color });
-    const disc = new THREE.Mesh(discGeo, discMat);
-    group.add(disc);
-
-    // Fire pillar (glow)
-    const fireGeo = new THREE.CylinderGeometry(0.1, 0.3, 1.5, 6);
-    const fireMat = new THREE.MeshBasicMaterial({ color: 0xff8820 });
-    const fire = new THREE.Mesh(fireGeo, fireMat);
-    fire.position.y = 0.9;
-    group.add(fire);
-
-    // Point light (campfire glow)
-    const light = new THREE.PointLight(tribe.color, 0.6, 8);
-    light.position.y = 1.5;
-    group.add(light);
-    tribe._light = light;
-
-    // Position on heightmap
-    const S = CONFIG.MAP_SIZE;
-    const idx = tribe.y*S+tribe.x;
-    const h = SIM.world.heights[idx]*8;
-    group.position.set(tribe.x - S/2, h+0.1, tribe.y - S/2);
-
-    tribe._mesh = group;
-    tribeMeshes.push(group);
-    scene.add(group);
+  tribeMeshes.forEach(m=>{scene.remove(m);if(m.geometry)m.geometry.dispose();});
+  tribeMeshes=[];
+  SIM.tribes.forEach(tribe=>{
+    if(!tribe.alive)return;
+    const group=new THREE.Group();
+    group.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.5,0.15,8),new THREE.MeshLambertMaterial({color:tribe.color}))));
+    const fire=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.3,1.5,6),new THREE.MeshBasicMaterial({color:0xff8820}));
+    fire.position.y=0.9; group.add(fire);
+    const light=new THREE.PointLight(tribe.color,0.6,8);
+    light.position.y=1.5; group.add(light); tribe._light=light;
+    const S=CONFIG.MAP_SIZE;
+    const idx=tribe.y*S+tribe.x;
+    const h=SIM.world.heights[idx]*8;
+    // Position centrée : décaler de -S/2 pour que le milieu soit à 0,0
+    group.position.set(tribe.x-S/2, h+0.1, tribe.y-S/2);
+    tribe._mesh=group; tribeMeshes.push(group); scene.add(group);
   });
 }
 
-// ── PARTICLES (prayer dots) ──────────────────────────────────────────
 function buildParticles() {
-  const count = 200;
-  const geo = new THREE.BufferGeometry();
-  const positions = new Float32Array(count*3);
-  const colors = new Float32Array(count*3);
-  for (let i=0;i<count;i++) {
-    positions[i*3]   = (Math.random()-0.5)*CONFIG.MAP_SIZE;
-    positions[i*3+1] = Math.random()*20;
-    positions[i*3+2] = (Math.random()-0.5)*CONFIG.MAP_SIZE;
-    colors[i*3]   = 0.8; colors[i*3+1] = 0.6; colors[i*3+2] = 0.2;
-  }
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({ size:0.3, vertexColors:true, transparent:true, opacity:0.4 });
-  particleSystem = new THREE.Points(geo, mat);
+  const count=200,geo=new THREE.BufferGeometry();
+  const positions=new Float32Array(count*3),colors=new Float32Array(count*3);
+  for(let i=0;i<count;i++){positions[i*3]=(Math.random()-0.5)*CONFIG.MAP_SIZE;positions[i*3+1]=Math.random()*20;positions[i*3+2]=(Math.random()-0.5)*CONFIG.MAP_SIZE;colors[i*3]=0.8;colors[i*3+1]=0.6;colors[i*3+2]=0.2;}
+  geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(colors,3));
+  particleSystem=new THREE.Points(geo,new THREE.PointsMaterial({size:0.3,vertexColors:true,transparent:true,opacity:0.4}));
   scene.add(particleSystem);
 }
 
-// ── CAMERA CONTROLS ──────────────────────────────────────────────────
 function setupCameraControls() {
-  let isDragging=false, lastX=0, lastY=0;
-  const c = renderer.domElement;
-  c.addEventListener('mousedown', e=>{ if(e.button===2||e.button===1){isDragging=true;lastX=e.clientX;lastY=e.clientY;} });
-  window.addEventListener('mouseup', ()=>isDragging=false);
-  window.addEventListener('mousemove', e=>{
-    if (!isDragging) return;
-    const dx=(e.clientX-lastX)*0.15, dy=(e.clientY-lastY)*0.15;
+  let isDragging=false,lastX=0,lastY=0;
+  const c=renderer.domElement;
+  c.addEventListener('mousedown',e=>{if(e.button===2||e.button===1){isDragging=true;lastX=e.clientX;lastY=e.clientY;}});
+  window.addEventListener('mouseup',()=>isDragging=false);
+  window.addEventListener('mousemove',e=>{
+    if(!isDragging)return;
+    const dx=(e.clientX-lastX)*0.15,dy=(e.clientY-lastY)*0.15;
     camera.position.x-=dx; camera.position.z-=dy;
-    camTarget.x-=dx; camTarget.z-=dy;
     lastX=e.clientX; lastY=e.clientY;
   });
-  c.addEventListener('wheel', e=>{
+  c.addEventListener('wheel',e=>{
     e.preventDefault();
-    const d = e.deltaY*0.05;
-    camera.position.y = Math.max(10, Math.min(100, camera.position.y+d));
-    camera.position.z = Math.max(30, Math.min(140, camera.position.z+d*1.5));
-  }, {passive:false});
-  c.addEventListener('contextmenu', e=>e.preventDefault());
+    const d=e.deltaY*0.05;
+    camera.position.y=Math.max(10,Math.min(120,camera.position.y+d));
+    camera.position.z=Math.max(20,Math.min(150,camera.position.z+d*1.2));
+  },{passive:false});
+  c.addEventListener('contextmenu',e=>e.preventDefault());
 }
 
-function onResize() {
-  const container = document.getElementById('map-container');
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  camera.aspect = container.clientWidth/container.clientHeight;
-  camera.updateProjectionMatrix();
-}
+function onResize(){const c=document.getElementById('map-container');renderer.setSize(c.clientWidth,c.clientHeight);camera.aspect=c.clientWidth/c.clientHeight;camera.updateProjectionMatrix();}
+function onMouseMove(e){const rect=renderer.domElement.getBoundingClientRect();mouse.x=((e.clientX-rect.left)/rect.width)*2-1;mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;}
+function onMapClick(e){raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObjects(tribeMeshes,true);if(hits.length){const mesh=hits[0].object;SIM.tribes.forEach(t=>{if(t._mesh&&(mesh===t._mesh||t._mesh.children.includes(mesh)))selectTribe(t);});}}
 
-function onMouseMove(e) {
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
-  mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
-}
-
-function onMapClick(e) {
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(tribeMeshes, true);
-  if (hits.length) {
-    const mesh = hits[0].object;
-    let found = null;
-    SIM.tribes.forEach(t=>{ if(t._mesh && (mesh===t._mesh||t._mesh.children.includes(mesh))) found=t; });
-    if (found) selectTribe(found);
-  }
-}
-
-// ── RENDER LOOP ──────────────────────────────────────────────────────
-let lastTime=0;
+let lastTime=0,animFrame=0;
 function animate(time) {
   requestAnimationFrame(animate);
-  const dt = (time-lastTime)/1000;
   lastTime=time;
-
-  // Tribe bobbing animation
   SIM.tribes.forEach(t=>{
-    if (!t._mesh || !t.alive) return;
-    t._mesh.children.forEach((c,i)=>{ if(i===1) c.position.y = 0.9+Math.sin(time*0.003+t.id)*0.1; });
-    // Faith glow on light
-    if (t._light) t._light.intensity = 0.3 + t.faith*0.8 + Math.sin(time*0.002+t.id*1.3)*0.1;
+    if(!t._mesh||!t.alive)return;
+    t._mesh.children.forEach((c,i)=>{if(i===1)c.position.y=0.9+Math.sin(time*0.003+t.id)*0.1;});
+    if(t._light)t._light.intensity=0.3+t.faith*0.8+Math.sin(time*0.002+t.id*1.3)*0.1;
   });
-
-  // Particle drift (prayer spirits)
-  if (particleSystem) {
-    const pos = particleSystem.geometry.attributes.position;
-    for (let i=0;i<pos.count;i++) {
-      pos.setY(i, pos.getY(i)+0.02*Math.sin(time*0.001+i));
-      if (pos.getY(i)>25) pos.setY(i,0);
-    }
+  if(particleSystem){
+    const pos=particleSystem.geometry.attributes.position;
+    for(let i=0;i<pos.count;i++){pos.setY(i,pos.getY(i)+0.02*Math.sin(time*0.001+i));if(pos.getY(i)>25)pos.setY(i,0);}
     pos.needsUpdate=true;
-    particleSystem.material.opacity = 0.1 + SIM.tribes.reduce((s,t)=>s+t.faith,0)/(SIM.tribes.length||1)*0.3;
+    particleSystem.material.opacity=0.1+SIM.tribes.reduce((s,t)=>s+t.faith,0)/(SIM.tribes.length||1)*0.3;
   }
-
-  // Day/night lighting
-  const timeOfDay = (SIM.day%1); // 0..1
-  const dayness = 0.5+0.5*Math.sin(timeOfDay*Math.PI*2-Math.PI/2);
-  if (SIM.sunLight) {
-    SIM.sunLight.intensity = 0.3 + dayness*1.2;
-    SIM.sunLight.color.setRGB(1.0, 0.85+dayness*0.15, 0.6+dayness*0.4);
-  }
-  scene.fog.color.setRGB(0.03+dayness*0.05, 0.02+dayness*0.04, 0.01+dayness*0.02);
-
-  renderer.render(scene, camera);
+  const dayness=0.5+0.5*Math.sin((SIM.day%1)*Math.PI*2-Math.PI/2);
+  if(SIM.sunLight){SIM.sunLight.intensity=0.3+dayness*1.2;SIM.sunLight.color.setRGB(1.0,0.85+dayness*0.15,0.6+dayness*0.4);}
+  scene.fog.color.setRGB(0.03+dayness*0.05,0.02+dayness*0.04,0.01+dayness*0.02);
+  renderer.render(scene,camera);
+  animFrame++;
+  if(animFrame%3===0){drawTerritories();updatePlaceLabels();}
 }
 
-// ── SIMULATION TICK ──────────────────────────────────────────────────
-function tick() {
-  if (SIM.speed===0) return;
-  const steps = SIM.speed;
-  for (let s=0;s<steps;s++) doTick();
-  updateUI();
-}
+// ── SIMULATION ────────────────────────────────────────
+function tick(){if(SIM.speed===0)return;for(let s=0;s<SIM.speed;s++)doTick();updateUI();}
 
-function doTick() {
-  SIM.tick++;
-  SIM.day += CONFIG.DAYS_PER_TICK;
-  if (SIM.day >= 360) { SIM.day -= 360; SIM.year--; }
-  SIM.season = Math.floor((SIM.day/360)*4);
-
-  const winterPenalty = SIM.season===3 ? 0.6 : 1.0;
-  const summerBonus   = SIM.season===1 ? 1.3 : 1.0;
-
-  SIM.tribes.forEach(tribe => {
-    if (!tribe.alive) return;
-
-    // ── FOOD SYSTEM ──
-    const gatherers = tribe.members.filter(m=>m.role==='gatherer').length;
-    const hunters   = tribe.members.filter(m=>m.role==='hunter').length;
-    const S = CONFIG.MAP_SIZE;
-    const tile = SIM.world.tiles[tribe.y*S+tribe.x];
-
-    tribe.food += gatherers * CONFIG.FOOD_PER_GATHER * tile.fertility * summerBonus * winterPenalty;
-    tribe.food += hunters   * CONFIG.FOOD_PER_HUNT   * tile.huntable  * summerBonus * winterPenalty;
-    tribe.food -= tribe.members.length * CONFIG.FOOD_CONSUME_PER_DAY * CONFIG.DAYS_PER_TICK;
-    tribe.food = Math.max(0, tribe.food);
-
-    // Starvation
-    if (tribe.food < tribe.members.length*5) {
-      tribe.members.forEach(m=>{ m.health -= 0.015; m.hunger += 0.02; });
-    }
-
-    // Deaths
-    const dead = tribe.members.filter(m=>m.health<=0||m.age>55+Math.random()*20);
-    dead.forEach(m=>{
-      const idx = tribe.members.indexOf(m);
-      tribe.members.splice(idx,1);
-      if (Math.random()<0.3) addEvent(`<em>${tribe.name}</em> — ${m.role==='chief'?'Le chef est mort.':'Un membre a péri.'}`, 'death');
-      // Death raises faith
-      tribe.faith = Math.min(1, tribe.faith + 0.02);
-    });
-
-    // Aging
-    tribe.members.forEach(m=>{ m.age += CONFIG.DAYS_PER_TICK/360; });
-
-    // Reproduction
-    if (tribe.food > tribe.members.length*15 && tribe.members.length < CONFIG.MAX_TRIBE_POP) {
-      const females = tribe.members.filter(m=>m.sex==='F'&&m.age>14&&m.age<40).length;
-      if (females>0 && Math.random()<0.003*females) {
-        tribe.members.push({
-          id: Date.now()+Math.random(),
-          age: 0, hunger: 0, health: 1.0, faith: Math.random()*0.1,
-          role: Math.random()<0.5?'hunter':'gatherer', sex: Math.random()<0.5?'M':'F',
-        });
-        if (Math.random()<0.15) addEvent(`Un enfant naît chez <em>${tribe.name}</em>.`, 'birth');
-      }
-    }
-
-    // Extinction
-    if (tribe.members.length < CONFIG.MIN_TRIBE_POP) {
-      tribe.alive = false;
-      addEvent(`<em>${tribe.name}</em> s'est éteinte. Le monde les oublie.`, 'death');
-      buildTribeMeshes();
-      return;
-    }
-
-    // ── MOVEMENT ──
-    if (tribe.food < tribe.members.length*8 || Math.random()<0.005) {
-      // Migrate toward better tile
-      const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]];
-      let best=null, bestScore=-Infinity;
-      dirs.forEach(([dx,dy])=>{
-        const nx=tribe.x+dx*3, ny=tribe.y+dy*3;
-        if (nx<2||nx>S-2||ny<2||ny>S-2) return;
-        const t=SIM.world.tiles[ny*S+nx];
-        if (t.biome==='water'||t.biome==='mountain') return;
-        const occupied=SIM.tribes.some(tt=>tt.alive&&tt!==tribe&&Math.hypot(tt.x-nx,tt.y-ny)<8);
-        if (occupied) return;
-        const score=t.fertility+t.huntable-Math.random()*0.2;
-        if (score>bestScore) { bestScore=score; best=[nx,ny]; }
-      });
-      if (best) {
-        tribe.x=best[0]; tribe.y=best[1];
-        if (tribe._mesh) {
-          const idx=tribe.y*S+tribe.x;
-          const h=SIM.world.heights[idx]*8;
-          tribe._mesh.position.set(tribe.x-S/2, h+0.1, tribe.y-S/2);
-        }
-      }
-    }
-
-    // ── FAITH SYSTEM ──
-    tribe.faith = Math.max(0, tribe.faith - CONFIG.FAITH_DECAY);
-    // Seasonal events raise faith
-    if (SIM.season===3 && Math.random()<0.01) tribe.faith = Math.min(1, tribe.faith+0.05);
-    // Catastrophic food raises faith
-    if (tribe.food < tribe.members.length*3) tribe.faith = Math.min(1, tribe.faith+0.008);
-    // Random metaphysical event
-    if (Math.random()<0.002) {
-      tribe.faith = Math.min(1, tribe.faith+0.04+Math.random()*0.06);
-      const evts = ["Un rêve étrange visita le chef.", "Une étoile filante traversa le ciel.", "Un animal albinos fut aperçu.", "La fumée du feu dessina une forme humaine."];
-      addEvent(`<em>${tribe.name}</em> — ${evts[Math.floor(Math.random()*evts.length)]}`, 'faith');
-      tribe.rituals++;
-    }
-
-    // ── PRAYER GENERATION ──
-    tribe.prayerCooldown = Math.max(0, tribe.prayerCooldown-1);
-    if (tribe.faith >= CONFIG.PRAYER_FAITH_THRESHOLD && tribe.prayerCooldown===0) {
-      const [text, intensity] = PRAYERS[Math.floor(Math.random()*PRAYERS.length)];
-      addPrayer(tribe, text, intensity);
-      tribe.prayerCooldown = 40 + Math.floor(Math.random()*60);
-    }
-
-    // ── DIVINE ENERGY REGEN ──
-    SIM.divineEnergy = Math.min(100, SIM.divineEnergy + tribe.faith*0.003*tribe.members.length/20);
+function doTick(){
+  SIM.tick++; SIM.day+=CONFIG.DAYS_PER_TICK;
+  if(SIM.day>=360){SIM.day-=360;SIM.year--;}
+  SIM.season=Math.floor((SIM.day/360)*4);
+  const wp=SIM.season===3?0.6:1.0, sb=SIM.season===1?1.3:1.0;
+  SIM.tribes.forEach(tribe=>{
+    if(!tribe.alive)return;
+    const g=tribe.members.filter(m=>m.role==='gatherer').length;
+    const h=tribe.members.filter(m=>m.role==='hunter').length;
+    const S=CONFIG.MAP_SIZE, tile=SIM.world.tiles[tribe.y*S+tribe.x];
+    tribe.food+=g*CONFIG.FOOD_PER_GATHER*tile.fertility*sb*wp;
+    tribe.food+=h*CONFIG.FOOD_PER_HUNT*tile.huntable*sb*wp;
+    tribe.food-=tribe.members.length*CONFIG.FOOD_CONSUME_PER_DAY*CONFIG.DAYS_PER_TICK;
+    tribe.food=Math.max(0,tribe.food);
+    if(tribe.food<tribe.members.length*5)tribe.members.forEach(m=>{m.health-=0.015;m.hunger+=0.02;});
+    const dead=tribe.members.filter(m=>m.health<=0||m.age>55+Math.random()*20);
+    dead.forEach(m=>{tribe.members.splice(tribe.members.indexOf(m),1);if(Math.random()<0.3)addEvent(`<em>${tribe.name}</em> — ${m.role==='chief'?'Le chef est mort.':'Un membre a péri.'}`, 'death');tribe.faith=Math.min(1,tribe.faith+0.02);});
+    tribe.members.forEach(m=>{m.age+=CONFIG.DAYS_PER_TICK/360;});
+    if(tribe.food>tribe.members.length*15&&tribe.members.length<CONFIG.MAX_TRIBE_POP){const females=tribe.members.filter(m=>m.sex==='F'&&m.age>14&&m.age<40).length;if(females>0&&Math.random()<0.003*females){tribe.members.push({id:Date.now()+Math.random(),age:0,hunger:0,health:1.0,faith:0,role:Math.random()<0.5?'hunter':'gatherer',sex:Math.random()<0.5?'M':'F'});if(Math.random()<0.15)addEvent(`Un enfant naît chez <em>${tribe.name}</em>.`,'birth');}}
+    if(tribe.members.length<CONFIG.MIN_TRIBE_POP){tribe.alive=false;addEvent(`<em>${tribe.name}</em> s'est éteinte.`,'death');buildTribeMeshes();return;}
+    // Migration
+    if(tribe.food<tribe.members.length*8||Math.random()<0.005){const dirs=[[-1,0],[1,0],[0,-1],[0,1]];let best=null,bestScore=-Infinity;dirs.forEach(([dx,dy])=>{const nx=tribe.x+dx*3,ny=tribe.y+dy*3;if(nx<2||nx>S-2||ny<2||ny>S-2)return;const t=SIM.world.tiles[ny*S+nx];if(t.biome==='water'||t.biome==='mountain')return;const score=t.fertility+t.huntable-Math.random()*0.2;if(score>bestScore){bestScore=score;best=[nx,ny];}});if(best){tribe.x=best[0];tribe.y=best[1];if(tribe._mesh){const idx=tribe.y*S+tribe.x;const h=SIM.world.heights[idx]*8;tribe._mesh.position.set(tribe.x-S/2,h+0.1,tribe.y-S/2);}}}
+    tribe.faith=Math.max(0,tribe.faith-CONFIG.FAITH_DECAY);
+    if(SIM.season===3&&Math.random()<0.01)tribe.faith=Math.min(1,tribe.faith+0.05);
+    if(tribe.food<tribe.members.length*3)tribe.faith=Math.min(1,tribe.faith+0.008);
+    if(Math.random()<0.002){tribe.faith=Math.min(1,tribe.faith+0.05);const evts=["Un rêve étrange visita le chef.","Une étoile filante traversa le ciel.","Un animal albinos fut aperçu."];addEvent(`<em>${tribe.name}</em> — ${evts[Math.floor(Math.random()*evts.length)]}`,'faith');tribe.rituals++;}
+    tribe.prayerCooldown=Math.max(0,tribe.prayerCooldown-1);
+    if(tribe.faith>=CONFIG.PRAYER_FAITH_THRESHOLD&&tribe.prayerCooldown===0){const[text,intensity]=PRAYERS[Math.floor(Math.random()*PRAYERS.length)];addPrayer(tribe,text,intensity);tribe.prayerCooldown=40+Math.floor(Math.random()*60);}
+    SIM.divineEnergy=Math.min(100,SIM.divineEnergy+tribe.faith*0.003*tribe.members.length/20);
   });
 }
 
-// ── UI UPDATE ────────────────────────────────────────────────────────
-function updateUI() {
-  const aliveTr = SIM.tribes.filter(t=>t.alive);
-  const totalPop = aliveTr.reduce((s,t)=>s+t.members.length,0);
-  const avgFaith = aliveTr.length ? aliveTr.reduce((s,t)=>s+t.faith,0)/aliveTr.length : 0;
-
-  document.getElementById('stat-year').textContent = `${SIM.year.toLocaleString()} BP`;
-  document.getElementById('stat-pop').textContent = totalPop;
-  document.getElementById('stat-tribes').textContent = `${aliveTr.length}/${CONFIG.NUM_TRIBES}`;
-  document.getElementById('stat-faith').textContent = `${Math.round(avgFaith*100)}%`;
-  document.getElementById('stat-prayers').textContent = SIM.pendingPrayers.length;
-  document.getElementById('energy-fill').style.width = SIM.divineEnergy+'%';
-  document.getElementById('energy-val').textContent = Math.round(SIM.divineEnergy);
-  document.getElementById('day-num').textContent = Math.round(SIM.day);
-  document.getElementById('year-num').textContent = SIM.year.toLocaleString();
-
-  const seasons = [{emoji:'🌱',name:'PRINTEMPS'},{emoji:'☀',name:'ÉTÉ'},{emoji:'🍂',name:'AUTOMNE'},{emoji:'❄',name:'HIVER'}];
-  const s = seasons[SIM.season];
-  document.getElementById('season-ring').textContent = s.emoji;
-  document.getElementById('season-ring').setAttribute('data-season', s.name);
-
-  const timeTxt = ['Aube','Milieu du Jour','Crépuscule','Nuit'][Math.floor(((SIM.day%1)*4))%4];
-  document.getElementById('time-display').textContent = `⸻ ${s.name} — An ${SIM.year.toLocaleString()} BP ⸻`;
-
-  // World condition
-  const foodCrisis = aliveTr.filter(t=>t.food<t.members.length*5).length;
-  let cond='', condColor='#8acc70';
-  if (aliveTr.length===0) { cond='Extinction totale'; condColor='#e05050'; }
-  else if (foodCrisis>aliveTr.length/2) { cond='Famine généralisée'; condColor='#e05050'; }
-  else if (foodCrisis>0) { cond='Tensions alimentaires'; condColor='#e8a840'; }
-  else if (avgFaith>0.6) { cond='Ferveur religieuse intense'; condColor='#b070e0'; }
-  else { cond='Monde en équilibre primitif'; condColor='#8acc70'; }
+// ── UI ─────────────────────────────────────────────────
+function updateUI(){
+  const aliveTr=SIM.tribes.filter(t=>t.alive);
+  const totalPop=aliveTr.reduce((s,t)=>s+t.members.length,0);
+  const avgFaith=aliveTr.length?aliveTr.reduce((s,t)=>s+t.faith,0)/aliveTr.length:0;
+  document.getElementById('stat-year').textContent=`${SIM.year.toLocaleString()} BP`;
+  document.getElementById('stat-pop').textContent=totalPop;
+  document.getElementById('stat-tribes').textContent=`${aliveTr.length}/${CONFIG.NUM_TRIBES}`;
+  document.getElementById('stat-faith').textContent=`${Math.round(avgFaith*100)}%`;
+  document.getElementById('stat-prayers').textContent=SIM.pendingPrayers.length;
+  document.getElementById('energy-fill').style.width=SIM.divineEnergy+'%';
+  document.getElementById('energy-val').textContent=Math.round(SIM.divineEnergy);
+  document.getElementById('day-num').textContent=Math.round(SIM.day);
+  document.getElementById('year-num').textContent=SIM.year.toLocaleString();
+  const seasons=[{emoji:'🌱',name:'PRINTEMPS'},{emoji:'☀',name:'ÉTÉ'},{emoji:'🍂',name:'AUTOMNE'},{emoji:'❄',name:'HIVER'}];
+  const s=seasons[SIM.season];
+  document.getElementById('season-ring').textContent=s.emoji;
+  document.getElementById('season-ring').setAttribute('data-season',s.name);
+  document.getElementById('time-display').textContent=`⸻ ${s.name} — An ${SIM.year.toLocaleString()} BP ⸻`;
+  const foodCrisis=aliveTr.filter(t=>t.food<t.members.length*5).length;
+  let cond='',condColor='#8acc70';
+  if(!aliveTr.length){cond='Extinction totale';condColor='#e05050';}
+  else if(foodCrisis>aliveTr.length/2){cond='Famine généralisée';condColor='#e05050';}
+  else if(foodCrisis>0){cond='Tensions alimentaires';condColor='#e8a840';}
+  else if(avgFaith>0.6){cond='Ferveur religieuse intense';condColor='#b070e0';}
+  else{cond='Monde en équilibre primitif';condColor='#8acc70';}
   document.getElementById('world-condition').textContent=cond;
   document.getElementById('world-condition').style.color=condColor;
-
-  // Tribe cards
   renderTribeCards(aliveTr);
-  if (SIM.selectedTribe) renderTribeDetail(SIM.selectedTribe);
+  if(SIM.selectedTribe)renderTribeDetail(SIM.selectedTribe);
 }
 
-function renderTribeCards(tribes) {
-  const list = document.getElementById('tribes-list');
-  list.innerHTML='';
+function renderTribeCards(tribes){
+  const list=document.getElementById('tribes-list');list.innerHTML='';
   tribes.forEach(t=>{
-    const foodPct = Math.min(100, (t.food/(t.members.length*20))*100);
-    const faithPct = t.faith*100;
-    const status = t.food<t.members.length*5 ? ['status-crit','FAMINE'] :
-                   t.faith>0.6 ? ['status-pray','EN PRIÈRE'] :
-                   t.food<t.members.length*10 ? ['status-warn','TENDU'] : ['status-ok','STABLE'];
-    list.innerHTML += `
-      <div class="tribe-card${SIM.selectedTribe?.id===t.id?' selected':''}"
-           style="--tribe-color:#${t.color.toString(16).padStart(6,'0')}"
-           onclick="selectTribe(SIM.tribes[${t.id}])">
-        <div class="tribe-name">${t.name}</div>
-        <div class="tribe-stats">
-          <div class="t-stat">👥 <span>${t.members.length}</span></div>
-          <div class="t-stat">🍖 <span>${Math.round(t.food)}</span></div>
-          <div class="t-stat">🙏 <span>${Math.round(faithPct)}%</span></div>
-          <div class="t-stat">⚗ <span>${t.rituals}</span></div>
-        </div>
-        <div class="tribe-bar"><div class="tribe-bar-fill food-fill" style="width:${foodPct}%"></div></div>
-        <div class="tribe-bar"><div class="tribe-bar-fill faith-fill" style="width:${faithPct}%"></div></div>
-        <span class="status-badge ${status[0]}">${status[1]}</span>
-      </div>`;
+    const foodPct=Math.min(100,(t.food/(t.members.length*20))*100);
+    const faithPct=t.faith*100;
+    const status=t.food<t.members.length*5?['status-crit','FAMINE']:t.faith>0.6?['status-pray','EN PRIÈRE']:t.food<t.members.length*10?['status-warn','TENDU']:['status-ok','STABLE'];
+    const inWar=SIM._activeWars.some(w=>w.attacker_id===t.id||w.defender_id===t.id);
+    list.innerHTML+=`<div class="tribe-card${SIM.selectedTribe?.id===t.id?' selected':''}" style="--tribe-color:#${t.color.toString(16).padStart(6,'0')}" onclick="selectTribe(SIM.tribes[${t.id}])">
+      <div class="tribe-name">${t.name}${inWar?'<span class="war-badge">⚔ EN GUERRE</span>':''}</div>
+      <div class="tribe-stats"><div class="t-stat">👥 <span>${t.members.length}</span></div><div class="t-stat">🍖 <span>${Math.round(t.food)}</span></div><div class="t-stat">🙏 <span>${Math.round(faithPct)}%</span></div><div class="t-stat">⚗ <span>${t.rituals}</span></div></div>
+      <div class="tribe-bar"><div class="tribe-bar-fill food-fill" style="width:${foodPct}%"></div></div>
+      <div class="tribe-bar"><div class="tribe-bar-fill faith-fill" style="width:${faithPct}%"></div></div>
+      <span class="status-badge ${status[0]}">${status[1]}</span>
+    </div>`;
   });
 }
 
-function selectTribe(tribe) {
-  SIM.selectedTribe = tribe;
-  // Camera pan to tribe
-  const S = CONFIG.MAP_SIZE;
-  camera.position.x = tribe.x - S/2;
-  camera.position.z = tribe.y - S/2 + 25;
+function selectTribe(tribe){
+  SIM.selectedTribe=tribe;
+  const S=CONFIG.MAP_SIZE;
+  camera.position.x=tribe.x-S/2;
+  camera.position.z=tribe.y-S/2+30;
   updateUI();
 }
 
-function renderTribeDetail(t) {
-  const d = document.getElementById('tribe-detail');
-  d.classList.add('active');
-  const hunters = t.members.filter(m=>m.role==='hunter').length;
-  const gather  = t.members.filter(m=>m.role==='gatherer').length;
-  const chief   = t.members.find(m=>m.role==='chief');
-  const avgAge  = t.members.reduce((s,m)=>s+m.age,0)/(t.members.length||1);
-  d.innerHTML = `
-    <strong>${t.name}</strong><br>
-    Chef : ${chief?`${chief.sex==='M'?'Homme':'Femme'}, ${Math.round(chief.age)} ans`:'Inconnu'}<br>
-    Population : ${t.members.length} (${hunters} chasseurs, ${gather} cueilleurs)<br>
-    Âge moyen : ${Math.round(avgAge)} ans<br>
-    Nourriture : ${Math.round(t.food)} unités<br>
-    Foi : ${Math.round(t.faith*100)}%<br>
-    Rituels : ${t.rituals}<br>
-    Position : [${t.x}, ${t.y}]<br>
-    ${t.members.length>0?`<br><em>Dernier événement :<br>${t.events[t.events.length-1]||'Aucun'}</em>`:''}
-  `;
+function renderTribeDetail(t){
+  const d=document.getElementById('tribe-detail');d.classList.add('active');
+  const hunters=t.members.filter(m=>m.role==='hunter').length;
+  const gather=t.members.filter(m=>m.role==='gatherer').length;
+  const chief=t.members.find(m=>m.role==='chief');
+  const avgAge=t.members.reduce((s,m)=>s+m.age,0)/(t.members.length||1);
+  d.innerHTML=`<strong>${t.name}</strong><br>Chef: ${chief?`${chief.sex==='M'?'Homme':'Femme'}, ${Math.round(chief.age)} ans`:'Inconnu'}<br>Pop: ${t.members.length} (${hunters} chasseurs, ${gather} cueilleurs)<br>Âge moy: ${Math.round(avgAge)} ans<br>Nourriture: ${Math.round(t.food)}<br>Foi: ${Math.round(t.faith*100)}%<br>Rituels: ${t.rituals}`;
 }
 
-// ── PRAYER SYSTEM ────────────────────────────────────────────────────
-function addPrayer(tribe, text, intensity) {
-  const prayer = { id: Date.now()+Math.random(), tribe, text, intensity, answered: false, tick: SIM.tick };
-  SIM.pendingPrayers.unshift(prayer);
-  if (SIM.pendingPrayers.length > 20) SIM.pendingPrayers.pop();
-  renderPrayers();
-  addEvent(`🙏 <em>${tribe.name}</em> prie avec intensité ${Math.round(intensity*100)}%.`, 'faith');
-}
+function addPrayer(tribe,text,intensity){const prayer={id:Date.now()+Math.random(),tribe,text,intensity,answered:false,tick:SIM.tick};SIM.pendingPrayers.unshift(prayer);if(SIM.pendingPrayers.length>20)SIM.pendingPrayers.pop();renderPrayers();addEvent(`🙏 <em>${tribe.name}</em> prie avec intensité ${Math.round(intensity*100)}%.`,'faith');}
 
-function renderPrayers() {
-  const list = document.getElementById('prayers-list');
-  list.innerHTML='';
-  if (SIM.pendingPrayers.length===0) {
-    list.innerHTML='<div style="font-size:11px;color:var(--parchment-dark);font-style:italic;">Silence des mortels.</div>';
-    return;
-  }
+function renderPrayers(){
+  const list=document.getElementById('prayers-list');list.innerHTML='';
+  if(!SIM.pendingPrayers.length){list.innerHTML='<div style="font-size:11px;color:var(--parchment-dark);font-style:italic;">Silence des mortels.</div>';return;}
   SIM.pendingPrayers.slice(0,8).forEach(p=>{
-    const dots = Array.from({length:5},(_,i)=>`<div class="prayer-dot ${i<Math.round(p.intensity*5)?'active':''}"></div>`).join('');
-    list.innerHTML+=`
-      <div class="prayer-item ${!p.answered?'new':''}">
-        <div class="prayer-tribe">${p.tribe.name.toUpperCase()} · AN ${SIM.year.toLocaleString()} BP</div>
-        <div class="prayer-text">"${p.text}"</div>
-        <div class="prayer-intensity">${dots}</div>
-        ${!p.answered?`<div class="prayer-actions">
-          <button class="prayer-btn btn-sign" onclick="answerPrayer(${p.id},'sign')">✦ Signe</button>
-          <button class="prayer-btn btn-dream" onclick="answerPrayer(${p.id},'dream')">☾ Rêve</button>
-          <button class="prayer-btn btn-wrath" onclick="answerPrayer(${p.id},'wrath')">⚡ Fléau</button>
-          <button class="prayer-btn btn-ignore" onclick="answerPrayer(${p.id},'ignore')">— Ignorer</button>
-        </div>`:'<div style="font-size:9px;color:var(--parchment-dark);margin-top:4px;font-family:Cinzel,serif;letter-spacing:1px;">EXAUCÉE</div>'}
-      </div>`;
+    const dots=Array.from({length:5},(_,i)=>`<div class="prayer-dot ${i<Math.round(p.intensity*5)?'active':''}"></div>`).join('');
+    list.innerHTML+=`<div class="prayer-item ${!p.answered?'new':''}">
+      <div class="prayer-tribe">${p.tribe.name.toUpperCase()} · AN ${SIM.year.toLocaleString()} BP</div>
+      <div class="prayer-text">"${p.text}"</div>
+      <div class="prayer-intensity">${dots}</div>
+      ${!p.answered?`<div class="prayer-actions">
+        <button class="prayer-btn btn-sign" onclick="answerPrayer(${p.id},'sign')">✦ Signe</button>
+        <button class="prayer-btn btn-dream" onclick="answerPrayer(${p.id},'dream')">☾ Rêve</button>
+        <button class="prayer-btn btn-wrath" onclick="answerPrayer(${p.id},'wrath')">⚡ Fléau</button>
+        <button class="prayer-btn btn-ignore" onclick="answerPrayer(${p.id},'ignore')">— Ignorer</button>
+      </div>`:'<div style="font-size:9px;color:var(--parchment-dark);margin-top:4px;font-family:Cinzel,serif;">EXAUCÉE</div>'}
+    </div>`;
   });
 }
 
-function answerPrayer(id, type) {
-  const p = SIM.pendingPrayers.find(x=>Math.abs(x.id-id)<1);
-  if (!p || p.answered) return;
-
-  const costs = {sign:2, dream:5, wrath:8, ignore:0};
-  const cost = costs[type]||0;
-  if (SIM.divineEnergy < cost) { showToast('ÉNERGIE DIVINE INSUFFISANTE'); return; }
-  SIM.divineEnergy -= cost;
-  p.answered = true;
-
-  const tribe = p.tribe;
-  switch(type) {
-    case 'sign':
-      tribe.faith = Math.min(1, tribe.faith+0.15);
-      tribe.food = Math.min(999, tribe.food+20);
-      addEvent(`✦ Dieu a envoyé un signe à <em>${tribe.name}</em>. Leur foi grandit.`, 'divine');
-      showToast('SIGNE DIVIN ACCORDÉ');
-      break;
-    case 'dream':
-      tribe.faith = Math.min(1, tribe.faith+0.25);
-      tribe.members.forEach(m=>m.health=Math.min(1,m.health+0.1));
-      addEvent(`☾ Dieu a visité les rêves de <em>${tribe.name}</em>.`, 'divine');
-      showToast('RÊVE PROPHÉTIQUE ENVOYÉ');
-      break;
-    case 'wrath':
-      const victims = Math.floor(tribe.members.length*0.2);
-      for (let i=0;i<victims;i++) if (tribe.members.length>2) tribe.members.pop();
-      tribe.faith = Math.min(1, tribe.faith+0.4);
-      addEvent(`⚡ La colère divine s'abat sur <em>${tribe.name}</em>. ${victims} morts. Leur terreur devient foi.`, 'death');
-      showToast('FLÉAU DIVIN DÉCHAÎNÉ');
-      break;
-    case 'ignore':
-      addEvent(`— La prière de <em>${tribe.name}</em> reste sans réponse. Le doute s'installe.`, '');
-      tribe.faith = Math.max(0, tribe.faith-0.05);
-      break;
+function answerPrayer(id,type){
+  const p=SIM.pendingPrayers.find(x=>Math.abs(x.id-id)<1);
+  if(!p||p.answered)return;
+  const costs={sign:2,dream:5,wrath:8,ignore:0};
+  if(SIM.divineEnergy<(costs[type]||0)){showToast('ÉNERGIE DIVINE INSUFFISANTE');return;}
+  SIM.divineEnergy-=costs[type]||0;p.answered=true;
+  const tribe=p.tribe;
+  switch(type){
+    case 'sign':tribe.faith=Math.min(1,tribe.faith+0.15);tribe.food=Math.min(999,tribe.food+20);addEvent(`✦ Dieu a envoyé un signe à <em>${tribe.name}</em>.`,'divine');showToast('SIGNE DIVIN ACCORDÉ');break;
+    case 'dream':tribe.faith=Math.min(1,tribe.faith+0.25);tribe.members.forEach(m=>m.health=Math.min(1,m.health+0.1));addEvent(`☾ Dieu a visité les rêves de <em>${tribe.name}</em>.`,'divine');showToast('RÊVE PROPHÉTIQUE ENVOYÉ');break;
+    case 'wrath':{const v=Math.floor(tribe.members.length*0.2);for(let i=0;i<v;i++)if(tribe.members.length>2)tribe.members.pop();tribe.faith=Math.min(1,tribe.faith+0.4);addEvent(`⚡ La colère divine frappe <em>${tribe.name}</em>. ${v} morts.`,'death');showToast('FLÉAU DÉCHAÎNÉ');break;}
+    case 'ignore':tribe.faith=Math.max(0,tribe.faith-0.05);addEvent(`— La prière de <em>${tribe.name}</em> reste sans réponse.`,'');break;
   }
   renderPrayers();
 }
 
-// ── DIVINE ACTIONS ───────────────────────────────────────────────────
-function divineAction(type) {
-  const costs = {bless:5, miracle:15, prophet:25, disaster:20};
-  const cost = costs[type];
-  if (SIM.divineEnergy < cost) { showToast('ÉNERGIE INSUFFISANTE — PRIEZ DAVANTAGE'); return; }
-
-  const aliveTr = SIM.tribes.filter(t=>t.alive);
-  if (!aliveTr.length) return;
-  const target = SIM.selectedTribe?.alive ? SIM.selectedTribe : aliveTr[Math.floor(Math.random()*aliveTr.length)];
-
-  SIM.divineEnergy -= cost;
-
-  switch(type) {
-    case 'bless':
-      target.food = Math.min(999, target.food+80);
-      target.members.forEach(m=>m.health=Math.min(1,m.health+0.2));
-      target.faith = Math.min(1, target.faith+0.1);
-      addEvent(`☀ Bénédiction divine sur <em>${target.name}</em>. Abondance et santé.`, 'divine');
-      showToast('BÉNÉDICTION ACCORDÉE');
-      break;
-    case 'miracle':
-      target.faith = Math.min(1, target.faith+0.5);
-      aliveTr.forEach(t=>{ if(t!==target) t.faith=Math.min(1,t.faith+0.1); });
-      target.rituals+=3;
-      addEvent(`✦ Un miracle inexpliqué frappe <em>${target.name}</em>. La foi se propage.`, 'divine');
-      showToast('MIRACLE ACCOMPLI');
-      break;
-    case 'prophet':
-      target.faith = Math.min(1, target.faith+0.35);
-      target.members.push({ id:Date.now(), age:28+Math.floor(Math.random()*10), hunger:0.1, health:1.0, faith:0.9, role:'prophet', sex:'M' });
-      addEvent(`☾ Un prophète s'éveille chez <em>${target.name}</em>. Il parle au nom de l'Invisible.`, 'faith');
-      showToast('PROPHÈTE ENVOYÉ');
-      break;
-    case 'disaster':
-      const hit = aliveTr[Math.floor(Math.random()*aliveTr.length)];
-      const dead = Math.floor(hit.members.length*0.3);
-      for(let i=0;i<dead;i++) if(hit.members.length>2) hit.members.pop();
-      hit.food *= 0.3;
-      aliveTr.forEach(t=>t.faith=Math.min(1,t.faith+0.15));
-      addEvent(`⚡ Un fléau dévaste <em>${hit.name}</em>. ${dead} morts. La terreur du divin se répand.`, 'death');
-      showToast('FLÉAU DÉCHAÎNÉ SUR LE MONDE');
-      break;
+function divineAction(type){
+  const costs={bless:5,miracle:15,prophet:25,disaster:20};
+  if(SIM.divineEnergy<costs[type]){showToast('ÉNERGIE INSUFFISANTE');return;}
+  const aliveTr=SIM.tribes.filter(t=>t.alive);if(!aliveTr.length)return;
+  const target=SIM.selectedTribe?.alive?SIM.selectedTribe:aliveTr[Math.floor(Math.random()*aliveTr.length)];
+  SIM.divineEnergy-=costs[type];
+  switch(type){
+    case 'bless':target.food=Math.min(999,target.food+80);target.members.forEach(m=>m.health=Math.min(1,m.health+0.2));target.faith=Math.min(1,target.faith+0.1);addEvent(`☀ Bénédiction sur <em>${target.name}</em>.`,'divine');showToast('BÉNÉDICTION ACCORDÉE');break;
+    case 'miracle':target.faith=Math.min(1,target.faith+0.5);aliveTr.forEach(t=>{if(t!==target)t.faith=Math.min(1,t.faith+0.1);});target.rituals+=3;addEvent(`✦ Miracle chez <em>${target.name}</em>. La foi se propage.`,'divine');showToast('MIRACLE ACCOMPLI');break;
+    case 'prophet':target.faith=Math.min(1,target.faith+0.35);target.members.push({id:Date.now(),age:28+Math.floor(Math.random()*10),hunger:0.1,health:1.0,faith:0.9,role:'prophet',sex:'M'});addEvent(`☾ Un prophète s'éveille chez <em>${target.name}</em>.`,'faith');showToast('PROPHÈTE ENVOYÉ');break;
+    case 'disaster':{const hit=aliveTr[Math.floor(Math.random()*aliveTr.length)];const dead=Math.floor(hit.members.length*0.3);for(let i=0;i<dead;i++)if(hit.members.length>2)hit.members.pop();hit.food*=0.3;aliveTr.forEach(t=>t.faith=Math.min(1,t.faith+0.15));addEvent(`⚡ Fléau sur <em>${hit.name}</em>. ${dead} morts.`,'death');showToast('FLÉAU DÉCHAÎNÉ');break;}
   }
   updateUI();
 }
 
-// ── EVENT LOG ────────────────────────────────────────────────────────
-function addEvent(text, type) {
-  const entry = { text, type, year: SIM.year, day: Math.round(SIM.day) };
+function addEvent(text,type){
+  const entry={text,type,year:SIM.year,day:Math.round(SIM.day)};
   SIM.eventLog.unshift(entry);
-  if (SIM.eventLog.length>100) SIM.eventLog.pop();
+  if(SIM.eventLog.length>100)SIM.eventLog.length=100;
   renderEventLog();
 }
 
-function renderEventLog() {
-  const log = document.getElementById('event-log');
-  log.innerHTML = SIM.eventLog.slice(0,25).map(e=>`
-    <div class="event-item">
-      <span class="event-time">${e.year ? e.year.toLocaleString() : '—'}</span>
-      <span class="event-text ${e.type==='divine'?'event-divine':e.type==='death'?'event-death':e.type==='birth'?'event-birth':e.type==='faith'?'event-faith':''}">${e.text}</span>
-    </div>`).join('');
+function renderEventLog(){
+  const log=document.getElementById('event-log');
+  log.innerHTML=SIM.eventLog.slice(0,25).map(e=>`<div class="event-item"><span class="event-time">${e.year?e.year.toLocaleString():'—'}</span><span class="event-text ${e.type==='divine'?'event-divine':e.type==='death'?'event-death':e.type==='birth'?'event-birth':e.type==='faith'?'event-faith':''}">${e.text}</span></div>`).join('');
 }
 
-// ── SPEED CONTROL ────────────────────────────────────────────────────
-function setSpeed(s) {
-  SIM.speed=s;
-  ['0','1','5'].forEach(id=>document.getElementById('speed-'+id).style.opacity=id==s?'1':'0.5');
+function setSpeed(s){SIM.speed=s;['0','1','5'].forEach(id=>document.getElementById('speed-'+id).style.opacity=id==s?'1':'0.5');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ── TERRITOIRE + NOMS DE LIEUX ────────────────────────
+function drawTerritories(){
+  const canvas=document.getElementById('territory-canvas');if(!canvas)return;
+  const container=document.getElementById('map-container');
+  canvas.width=container.clientWidth;canvas.height=container.clientHeight;
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+  SIM.tribes.forEach(tribe=>{
+    if(!tribe.alive||!tribe._mesh)return;
+    const pos3D=tribe._mesh.position.clone();pos3D.project(camera);
+    const sx=(pos3D.x*0.5+0.5)*canvas.width,sy=(-pos3D.y*0.5+0.5)*canvas.height;
+    const radius=Math.max(20,tribe.members?tribe.members.length*2.5:30);
+    const hex='#'+tribe.color.toString(16).padStart(6,'0');
+    const grad=ctx.createRadialGradient(sx,sy,0,sx,sy,radius);
+    grad.addColorStop(0,hex+'40');grad.addColorStop(1,hex+'00');
+    ctx.beginPath();ctx.arc(sx,sy,radius,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    SIM._activeWars.forEach(w=>{
+      if(w.attacker_id!==tribe.id)return;
+      const enemy=SIM.tribes.find(t=>t.id===w.defender_id);
+      if(!enemy||!enemy._mesh)return;
+      const ePos=enemy._mesh.position.clone();ePos.project(camera);
+      const ex=(ePos.x*0.5+0.5)*canvas.width,ey=(-ePos.y*0.5+0.5)*canvas.height;
+      ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);
+      ctx.strokeStyle='rgba(200,50,50,0.6)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+    });
+  });
 }
 
-// ── TOAST ────────────────────────────────────────────────────────────
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
+const PLACE_NAMES=["Vallée des Anciens","Forêt des Murmures","Pic du Tonnerre","Rivière Sombre","Plaine des Vents","Gorge des Esprits","Marais du Silence","Colline Sacrée","Rocher de l'Éveil"];
+let placeLabels=[];
+function generatePlaceNames(){
+  placeLabels.forEach(el=>el.remove());placeLabels=[];
+  const container=document.getElementById('map-container'),S=CONFIG.MAP_SIZE;
+  PLACE_NAMES.forEach(name=>{
+    let tx,ty,attempts=0;
+    do{tx=15+Math.floor(Math.random()*(S-30));ty=15+Math.floor(Math.random()*(S-30));attempts++;}while(SIM.world&&SIM.world.tiles[ty*S+tx]&&['water','mountain'].includes(SIM.world.tiles[ty*S+tx].biome)&&attempts<50);
+    const label=document.createElement('div');label.className='map-label';label.textContent=name;label.dataset.tx=tx;label.dataset.ty=ty;container.appendChild(label);placeLabels.push(label);
+  });
+}
+function updatePlaceLabels(){
+  if(!camera||!placeLabels.length)return;
+  const S=CONFIG.MAP_SIZE,container=document.getElementById('map-container');
+  const W=container.clientWidth,H=container.clientHeight;
+  placeLabels.forEach(label=>{
+    const tx=parseFloat(label.dataset.tx),ty=parseFloat(label.dataset.ty);
+    const idx=Math.min(Math.round(ty),S-1)*S+Math.min(Math.round(tx),S-1);
+    const h=SIM.world?SIM.world.heights[idx]*8:0;
+    const worldPos=new THREE.Vector3(tx-S/2,h,ty-S/2);worldPos.project(camera);
+    const sx=(worldPos.x*0.5+0.5)*W,sy=(-worldPos.y*0.5+0.5)*H;
+    if(worldPos.z>1){label.style.display='none';}else{label.style.display='block';label.style.left=sx+'px';label.style.top=sy+'px';}
+  });
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────
-function init() {
-  SIM.world = generateWorld();
-  SIM.tribes = spawnTribes(SIM.world);
-  initThree();
-  animate(0);
+// ── BACKEND ───────────────────────────────────────────
+let backendConnected=false,wsConnection=null;
 
-  // Tick loop
-  setInterval(()=>{
-    if (SIM.speed>0) { tick(); }
-  }, CONFIG.TICK_MS);
+function connectBackend(){
+  try{
+    wsConnection=new WebSocket(WS_URL);
+    wsConnection.onopen=()=>{backendConnected=true;showToast('CONNEXION AU MONDE ÉTABLIE');fetchMap();};
+    wsConnection.onmessage=e=>{try{const msg=JSON.parse(e.data);if(msg.type==='tick'||msg.type==='init')applyBackendState(msg.data);}catch(err){}};
+    wsConnection.onclose=()=>{backendConnected=false;setTimeout(connectBackend,5000);};
+    wsConnection.onerror=()=>{};
+  }catch(e){}
+}
 
-  addEvent('Le monde est né dans le silence du Créateur.', 'divine');
-  addEvent('Les premières tribus allument leurs feux.', 'birth');
-  setSpeed(1);
-  updateUI();
-  renderPrayers();
+function applyBackendState(data){
+  if(!data)return;
+  if(data.time){SIM.year=data.time.year_bp;SIM.day=data.time.day;SIM.season=data.time.season_index||0;SIM.tick=data.time.tick;}
+  if(data.divine_energy!==undefined)SIM.divineEnergy=data.divine_energy;
+  if(data.tribes)data.tribes.forEach(bt=>{const local=SIM.tribes.find(t=>t.id===bt.id);if(local){local.food=bt.food;local.faith=bt.faith;local.alive=bt.alive;local.rituals=bt.rituals;local.x=bt.x;local.y=bt.y;const diff=bt.population-local.members.length;if(diff>0)for(let i=0;i<diff;i++)local.members.push({id:Date.now()+i,age:Math.random()*30+10,hunger:0.2,health:0.9,faith:0,role:'gatherer',sex:Math.random()<0.5?'M':'F'});else if(diff<0)local.members.splice(0,-diff);if(local._mesh){const S=CONFIG.MAP_SIZE,idx=Math.min(local.y,S-1)*S+Math.min(local.x,S-1),h=SIM.world?SIM.world.heights[idx]*8:0;local._mesh.position.set(local.x-S/2,h+0.1,local.y-S/2);}}});
+  if(data.event_log)data.event_log.slice(0,5).forEach(ev=>{if(ev&&ev.text&&!SIM.eventLog.some(e=>e.text===ev.text&&e.tick===ev.tick))SIM.eventLog.unshift(ev);});
+  if(data.prayers)SIM.pendingPrayers=data.prayers.map(p=>({id:p.id,tribe:SIM.tribes.find(t=>t.id===p.tribe_id)||{name:p.tribe_name},text:p.text,intensity:p.intensity,answered:p.answered}));
+  if(data.wars){SIM._activeWars=data.wars.active_wars||[];renderWars(SIM._activeWars);}
+  updateUI();renderPrayers();if(SIM.eventLog.length>100)SIM.eventLog.length=100;renderEventLog();
+}
+
+async function fetchMap(){try{await fetch(`${API_URL}/world/map`);}catch(e){}}
+
+function renderWars(wars){
+  const panel=document.getElementById('wars-list'),title=document.getElementById('war-panel-title');
+  if(!wars||!wars.length){panel.innerHTML='';title.style.display='none';return;}
+  title.style.display='block';
+  panel.innerHTML=wars.map(w=>{
+    const att=SIM.tribes.find(t=>t.id===w.attacker_id),dfd=SIM.tribes.find(t=>t.id===w.defender_id);
+    return`<div class="war-panel"><div class="war-title">⚔ GUERRE ACTIVE</div><div class="war-item"><em>${att?att.name:'Tribu '+w.attacker_id}</em> attaque <em>${dfd?dfd.name:'Tribu '+w.defender_id}</em></div><div class="war-item">Cause: ${w.reason||'Territoire'} · Durée: ${w.duration||0} ticks</div></div>`;
+  }).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────
+function init(){
+  SIM.world=generateWorld();
+  SIM.tribes=spawnTribes(SIM.world);
+  initThree();animate(0);
+  setInterval(()=>{if(SIM.speed>0)tick();},CONFIG.TICK_MS);
+  addEvent('Le monde est né dans le silence du Créateur.','divine');
+  addEvent('Les premières tribus allument leurs feux.','birth');
+  setSpeed(1);updateUI();renderPrayers();
+  setTimeout(generatePlaceNames,1500);
 }
 
 init();
-
-// ═══════════════════════════════════════════════════
-//  V2 — SYSTÈME DE GUERRE & CARTE AMÉLIORÉE
-// ═══════════════════════════════════════════════════
-
-// ── AFFICHAGE DES GUERRES ────────────────────────────
-function renderWars(wars) {
-  const panel = document.getElementById('wars-list');
-  const title = document.getElementById('war-panel-title');
-  if (!wars || wars.length === 0) {
-    panel.innerHTML = '';
-    title.style.display = 'none';
-    return;
-  }
-  title.style.display = 'block';
-  panel.innerHTML = wars.map(w => {
-    const att = SIM.tribes.find(t => t.id === w.attacker_id);
-    const dfd = SIM.tribes.find(t => t.id === w.defender_id);
-    const attName = att ? att.name : `Tribu #${w.attacker_id}`;
-    const dfdName = dfd ? dfd.name : `Tribu #${w.defender_id}`;
-    return `<div class="war-panel">
-      <div class="war-title">⚔ GUERRE ACTIVE</div>
-      <div class="war-item"><em>${attName}</em> attaque <em>${dfdName}</em></div>
-      <div class="war-item">Cause : ${w.reason}</div>
-      <div class="war-item">Intensité : ${Math.round(w.intensity*100)}% · Durée : ${w.duration} ticks</div>
-    </div>`;
-  }).join('');
-
-  // Badge guerre sur les tribus concernées
-  SIM.tribes.forEach(t => {
-    const card = document.querySelector(`.tribe-card[onclick*="SIM.tribes[${t.id}]"]`);
-    if (!card) return;
-    const inWar = wars.some(w => w.attacker_id === t.id || w.defender_id === t.id);
-    const existing = card.querySelector('.war-badge');
-    if (inWar && !existing) {
-      const badge = document.createElement('span');
-      badge.className = 'war-badge';
-      badge.textContent = '⚔ EN GUERRE';
-      card.appendChild(badge);
-    } else if (!inWar && existing) {
-      existing.remove();
-    }
-  });
-}
-
-// ── DESSIN DES TERRITOIRES ───────────────────────────
-function drawTerritories() {
-  const canvas = document.getElementById('territory-canvas');
-  if (!canvas) return;
-  const container = document.getElementById('map-container');
-  canvas.width  = container.clientWidth;
-  canvas.height = container.clientHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Projeter chaque tribu sur le canvas 2D
-  SIM.tribes.forEach(tribe => {
-    if (!tribe.alive || !tribe._mesh) return;
-    // Projeter position 3D → 2D écran
-    const pos3D = tribe._mesh.position.clone();
-    pos3D.project(camera);
-    const sx = (pos3D.x * 0.5 + 0.5) * canvas.width;
-    const sy = (-pos3D.y * 0.5 + 0.5) * canvas.height;
-    const radius = Math.max(20, tribe.members ? tribe.members.length * 2.5 : 30);
-
-    // Cercle territoire
-    const color = tribe.color || 0xe8a840;
-    const hex = '#' + color.toString(16).padStart(6, '0');
-    const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, radius);
-    grad.addColorStop(0, hex + '40');
-    grad.addColorStop(1, hex + '00');
-    ctx.beginPath();
-    ctx.arc(sx, sy, radius, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Ligne de guerre entre tribus en conflit
-    if (SIM._activeWars) {
-      SIM._activeWars.forEach(w => {
-        if (w.attacker_id !== tribe.id) return;
-        const enemy = SIM.tribes.find(t => t.id === w.defender_id);
-        if (!enemy || !enemy._mesh) return;
-        const ePos = enemy._mesh.position.clone();
-        ePos.project(camera);
-        const ex = (ePos.x * 0.5 + 0.5) * canvas.width;
-        const ey = (-ePos.y * 0.5 + 0.5) * canvas.height;
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(ex, ey);
-        ctx.strokeStyle = 'rgba(200,50,50,0.6)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 4]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      });
-    }
-  });
-}
-
-// ── NOMS DE LIEUX SUR LA CARTE ───────────────────────
-const PLACE_NAMES = [
-  "Vallée des Anciens", "Forêt des Murmures", "Pic du Tonnerre",
-  "Rivière Sombre", "Plaine des Vents", "Gorge des Esprits",
-  "Marais du Silence", "Colline Sacrée", "Rocher de l'Éveil",
-];
-let placeLabels = [];
-
-function generatePlaceNames() {
-  placeLabels.forEach(el => el.remove());
-  placeLabels = [];
-  const container = document.getElementById('map-container');
-  const S = CONFIG.MAP_SIZE;
-
-  PLACE_NAMES.forEach((name, i) => {
-    // Trouver une position en forêt ou plaine
-    let tx, ty;
-    let attempts = 0;
-    do {
-      tx = 15 + Math.floor(Math.random() * (S - 30));
-      ty = 15 + Math.floor(Math.random() * (S - 30));
-      attempts++;
-    } while (
-      SIM.world &&
-      SIM.world.tiles[ty * S + tx] &&
-      ['water', 'mountain'].includes(SIM.world.tiles[ty * S + tx].biome) &&
-      attempts < 50
-    );
-
-    const label = document.createElement('div');
-    label.className = 'map-label';
-    label.textContent = name;
-    label.dataset.tx = tx;
-    label.dataset.ty = ty;
-    container.appendChild(label);
-    placeLabels.push(label);
-  });
-}
-
-function updatePlaceLabels() {
-  if (!camera || placeLabels.length === 0) return;
-  const S = CONFIG.MAP_SIZE;
-  const container = document.getElementById('map-container');
-  const W = container.clientWidth;
-  const H = container.clientHeight;
-
-  placeLabels.forEach(label => {
-    const tx = parseFloat(label.dataset.tx);
-    const ty = parseFloat(label.dataset.ty);
-    const idx = Math.min(Math.round(ty), S-1) * S + Math.min(Math.round(tx), S-1);
-    const h = SIM.world ? SIM.world.heights[idx] * 8 : 0;
-
-    const worldPos = new THREE.Vector3(tx - S/2, h, ty - S/2);
-    worldPos.project(camera);
-
-    const sx = (worldPos.x * 0.5 + 0.5) * W;
-    const sy = (-worldPos.y * 0.5 + 0.5) * H;
-
-    if (worldPos.z > 1) {
-      label.style.display = 'none';
-    } else {
-      label.style.display = 'block';
-      label.style.left = sx + 'px';
-      label.style.top  = sy + 'px';
-    }
-  });
-}
-
-// ── HOOK DANS LA BOUCLE D'ANIMATION ──────────────────
-const _origAnimate = animate;
-function animate(time) {
-  if (typeof _animFrame === 'undefined') window._animFrame = 0;
-  requestAnimationFrame(animate);
-  const dt = (time - lastTime) / 1000;
-  lastTime = time;
-
-  SIM.tribes.forEach(t => {
-    if (!t._mesh || !t.alive) return;
-    t._mesh.children.forEach((c,i)=>{ if(i===1) c.position.y = 0.9+Math.sin(time*0.003+t.id)*0.1; });
-    if (t._light) t._light.intensity = 0.3 + t.faith*0.8 + Math.sin(time*0.002+t.id*1.3)*0.1;
-  });
-
-  if (particleSystem) {
-    const pos = particleSystem.geometry.attributes.position;
-    for (let i=0;i<pos.count;i++) {
-      pos.setY(i, pos.getY(i)+0.02*Math.sin(time*0.001+i));
-      if (pos.getY(i)>25) pos.setY(i,0);
-    }
-    pos.needsUpdate=true;
-    particleSystem.material.opacity = 0.1 + SIM.tribes.reduce((s,t)=>s+t.faith,0)/(SIM.tribes.length||1)*0.3;
-  }
-
-  const dayness = 0.5+0.5*Math.sin((SIM.day%1)*Math.PI*2-Math.PI/2);
-  if (SIM.sunLight) {
-    SIM.sunLight.intensity = 0.3 + dayness*1.2;
-    SIM.sunLight.color.setRGB(1.0, 0.85+dayness*0.15, 0.6+dayness*0.4);
-  }
-  scene.fog.color.setRGB(0.03+dayness*0.05, 0.02+dayness*0.04, 0.01+dayness*0.02);
-
-  renderer.render(scene, camera);
-
-  // V2 : overlays toutes les 3 frames
-  window._animFrame++;
-  if (window._animFrame % 3 === 0) {
-    drawTerritories();
-    updatePlaceLabels();
-  }
-}
-
-// ── HOOK applyBackendState pour les guerres ──────────
-const _origApply = window.applyBackendState || function(){};
-window.applyBackendState = function(data) {
-  _origApply(data);
-  if (data && data.wars) {
-    SIM._activeWars = data.wars.active_wars || [];
-    renderWars(SIM._activeWars);
-  }
-};
-
-// Init noms de lieux après init()
-const _origInit = window.init;
-window.init = function() {
-  _origInit ? _origInit() : init();
-};
-setTimeout(generatePlaceNames, 1500);
-
+connectBackend();
+setInterval(()=>{document.getElementById('conn-dot').className=backendConnected?'connected':'';},1000);
 </script>
 </body>
 </html>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- BACKEND CONNECTION — injecté après la simulation locale    -->
-<!-- Remplacer les URLs ci-dessous après déploiement Railway    -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<script>
-// ── CONFIG BACKEND ───────────────────────────────────────────
-// En local :
-const API_URL = "https://world-sim-production.up.railway.app";
-const WS_URL  = "wss://world-sim-production.up.railway.app/ws";
-// Après Railway → remplacer par ton URL :
-// const API_URL = "https://TON-APP.up.railway.app";
-// const WS_URL  = "wss://TON-APP.up.railway.app/ws";
-
-let backendConnected = false;
-let wsConnection = null;
-
-// ── CONNEXION WEBSOCKET ──────────────────────────────────────
-function connectBackend() {
-  try {
-    wsConnection = new WebSocket(WS_URL);
-
-    wsConnection.onopen = () => {
-      backendConnected = true;
-      showToast('CONNEXION AU MONDE ÉTABLIE');
-      console.log('[Genesis] WebSocket connecté');
-      // Charger la carte depuis le backend
-      fetchMap();
-    };
-
-    wsConnection.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (msg.type === 'tick' || msg.type === 'init') {
-        applyBackendState(msg.data);
-      }
-    };
-
-    wsConnection.onclose = () => {
-      backendConnected = false;
-      console.log('[Genesis] WebSocket déconnecté — mode local');
-      setTimeout(connectBackend, 5000); // Reconnexion auto
-    };
-
-    wsConnection.onerror = () => {
-      console.log('[Genesis] Backend inaccessible — simulation locale active');
-    };
-  } catch (e) {
-    console.log('[Genesis] Pas de backend — simulation locale');
-  }
-}
-
-// ── APPLIQUER L'ÉTAT BACKEND ─────────────────────────────────
-function applyBackendState(data) {
-  if (!data) return;
-
-  // Mettre à jour le temps
-  if (data.time) {
-    SIM.year   = data.time.year_bp;
-    SIM.day    = data.time.day;
-    SIM.season = data.time.season_index || 0;
-    SIM.tick   = data.time.tick;
-  }
-
-  // Énergie divine
-  if (data.divine_energy !== undefined) {
-    SIM.divineEnergy = data.divine_energy;
-  }
-
-  // Tribus
-  if (data.tribes) {
-    data.tribes.forEach(bt => {
-      const local = SIM.tribes.find(t => t.id === bt.id);
-      if (local) {
-        local.food    = bt.food;
-        local.faith   = bt.faith;
-        local.alive   = bt.alive;
-        local.rituals = bt.rituals;
-        local.x = bt.x;
-        local.y = bt.y;
-        // Sync population
-        const diff = bt.population - local.members.length;
-        if (diff > 0) {
-          for (let i = 0; i < diff; i++) {
-            local.members.push({
-              id: Date.now() + i, age: Math.random() * 30 + 10,
-              hunger: 0.2, health: 0.9, faith: local.faith * 0.5,
-              role: 'gatherer', sex: Math.random() < 0.5 ? 'M' : 'F',
-            });
-          }
-        } else if (diff < 0) {
-          local.members.splice(0, -diff);
-        }
-        // Mettre à jour la position 3D
-        if (local._mesh) {
-          const S = CONFIG.MAP_SIZE;
-          const idx = Math.min(local.y, S-1) * S + Math.min(local.x, S-1);
-          const h = SIM.world ? SIM.world.heights[idx] * 8 : 0;
-          local._mesh.position.set(local.x - S/2, h + 0.1, local.y - S/2);
-        }
-      }
-    });
-  }
-
-  // Événements
-  if (data.event_log) {
-    data.event_log.slice(0, 5).forEach(ev => {
-      const already = SIM.eventLog.some(e => e.text === ev.text && e.tick === ev.tick);
-      if (!already) {
-        SIM.eventLog.unshift(ev);
-      }
-    });
-    if (SIM.eventLog.length > 100) SIM.eventLog.length = 100;
-    renderEventLog();
-  }
-
-  // Prières
-  if (data.prayers) {
-    SIM.pendingPrayers = data.prayers.map(p => ({
-      id:        p.id,
-      tribe:     SIM.tribes.find(t => t.id === p.tribe_id) || { name: p.tribe_name },
-      text:      p.text,
-      intensity: p.intensity,
-      answered:  p.answered,
-    }));
-    renderPrayers();
-  }
-
-  updateUI();
-}
-
-// ── CHARGER LA CARTE DEPUIS LE BACKEND ───────────────────────
-async function fetchMap() {
-  try {
-    const res  = await fetch(`${API_URL}/world/map`);
-    const data = await res.json();
-    console.log('[Genesis] Carte chargée depuis le backend');
-    // La carte backend remplace la locale (même seed → identique)
-  } catch (e) {
-    console.log('[Genesis] Carte locale conservée');
-  }
-}
-
-// ── OVERRIDE : ACTIONS DIVINES → BACKEND SI CONNECTÉ ─────────
-const _originalDivineAction = window.divineAction;
-window.divineAction = async function(type) {
-  if (!backendConnected) {
-    _originalDivineAction(type);
-    return;
-  }
-  try {
-    const tribe_id = SIM.selectedTribe?.id ?? null;
-    const res = await fetch(`${API_URL}/divine/action`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: type, tribe_id }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      showToast(data.message?.toUpperCase().slice(0, 40) || 'ACTION DIVINE ACCOMPLIE');
-    } else {
-      showToast(data.reason || 'ACTION IMPOSSIBLE');
-    }
-  } catch (e) {
-    _originalDivineAction(type);
-  }
-};
-
-// ── OVERRIDE : RÉPONSES AUX PRIÈRES ──────────────────────────
-const _originalAnswerPrayer = window.answerPrayer;
-window.answerPrayer = async function(id, type) {
-  if (!backendConnected) {
-    _originalAnswerPrayer(id, type);
-    return;
-  }
-  try {
-    const res = await fetch(`${API_URL}/divine/prayer/${id}/answer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: type }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      showToast('RÉPONSE DIVINE TRANSMISE');
-      const p = SIM.pendingPrayers.find(x => x.id === id);
-      if (p) p.answered = true;
-      renderPrayers();
-    }
-  } catch (e) {
-    _originalAnswerPrayer(id, type);
-  }
-};
-
-// ── INDICATEUR DE CONNEXION ───────────────────────────────────
-const connDot = document.createElement('div');
-connDot.style.cssText = `
-  position:fixed; bottom:12px; right:12px; width:8px; height:8px;
-  border-radius:50%; background:#444; z-index:9999;
-  transition: background 0.5s;
-  box-shadow: 0 0 6px currentColor;
-`;
-document.body.appendChild(connDot);
-setInterval(() => {
-  connDot.style.background = backendConnected ? '#4a8a4a' : '#4a4a4a';
-}, 1000);
-
-// Tenter la connexion backend (ne bloque pas si absent)
-connectBackend();
-</script>

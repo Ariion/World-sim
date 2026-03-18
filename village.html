@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Genesis Engine — Vue Village</title>
+<link rel="stylesheet" href="shared.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
 
@@ -233,7 +234,7 @@
     <div id="season-badge" class="season-spring">🌱 PRINTEMPS</div>
     <div class="stat-pill"><span class="label">TEMP.</span><span class="val" id="stat-temp">14°C</span></div>
     <div class="stat-pill"><span class="label">BÂTIMENTS</span><span class="val" id="stat-buildings">3</span></div>
-    <div style="margin-left:auto; display:flex; gap:6px;"><a href="index.html" style="padding:4px 10px;background:#1a2030;border:1px solid #e8a840;color:#e8a840;font-family:'Press Start 2P',monospace;font-size:6px;text-decoration:none;display:flex;align-items:center;">← MONDE DIVIN</a>
+    <div style="margin-left:auto; display:flex; gap:6px; align-items:center;"><a href="index.html" class="nav-btn">← MONDE DIVIN</a>
       <button class="action-btn" onclick="speedUp()">▶▶ VITESSE: <span id="speed-display">1x</span></button>
       <button class="action-btn" onclick="togglePause()">⏸ <span id="pause-txt">PAUSE</span></button>
     </div>
@@ -1747,25 +1748,20 @@ requestAnimationFrame(loop);
 // ══════════════════════════════════════════════
 const API_URL = "https://world-sim-production.up.railway.app";
 const WS_URL  = "wss://world-sim-production.up.railway.app/ws";
-let wsVillage = null;
-let backendConnected = false;
+let wsVillage = null, backendConnected = false;
 
 function connectVillageBackend() {
   try {
     wsVillage = new WebSocket(WS_URL);
-    
     wsVillage.onopen = () => {
       backendConnected = true;
+      document.getElementById('conn-dot').className = 'connected';
       addEvent('Connexion au monde établie.', 'season');
-      console.log('[Village] WebSocket connecté');
     };
-    
-    wsVillage.onmessage = (e) => {
+    wsVillage.onmessage = (ev) => {
       try {
-        const msg = JSON.parse(e.data);
+        const msg = JSON.parse(ev.data);
         const data = msg.data || msg;
-        
-        // Sync time
         if(data.time) {
           G.year = data.time.year_bp || G.year;
           G.day  = data.time.day || G.day;
@@ -1774,8 +1770,6 @@ function connectVillageBackend() {
             updateSeasonVisuals();
           }
         }
-        
-        // Sync tribes
         if(data.tribes) {
           data.tribes.forEach(bt => {
             const local = G.tribes.find(t => t.idx === bt.id);
@@ -1783,8 +1777,7 @@ function connectVillageBackend() {
             local.food  = bt.food  !== undefined ? bt.food  : local.food;
             local.faith = bt.faith !== undefined ? bt.faith : local.faith;
             const targetPop = bt.population || 0;
-            const currentPop = local.members.length;
-            const diff = targetPop - currentPop;
+            const diff = targetPop - local.members.length;
             if(diff > 0) {
               for(let i=0;i<Math.min(diff,5);i++) {
                 const roles=['hunter','gatherer','gatherer','builder'];
@@ -1792,71 +1785,48 @@ function connectVillageBackend() {
                   local.cx+(Math.random()-0.5)*4,
                   local.cy+(Math.random()-0.5)*4,
                   roles[Math.floor(Math.random()*roles.length)]);
-                G.entities.push(h);
-                local.members.push(h.id);
-                local.pop++;
+                G.entities.push(h); local.members.push(h.id); local.pop++;
               }
             } else if(diff < 0) {
               for(let i=0;i<Math.min(-diff,3);i++) {
-                if(local.members.length <= 2) break;
-                const id = local.members.pop();
-                const idx = G.entities.findIndex(e=>e.id===id);
-                if(idx>=0) G.entities.splice(idx,1);
-                local.pop--;
+                if(local.members.length<=2) break;
+                const id=local.members.pop();
+                const idx=G.entities.findIndex(e=>e.id===id);
+                if(idx>=0) G.entities.splice(idx,1); local.pop--;
               }
             }
           });
           buildTribeList();
         }
-        
-        // Sync events (only new ones)
-        if(data.event_log && data.event_log.length > 0) {
-          const latest = data.event_log[0];
-          if(latest && latest.text) {
-            addEvent(latest.text, latest.color || 'season');
-          }
+        if(data.event_log && data.event_log[0]) {
+          const ev2 = data.event_log[0];
+          if(ev2 && ev2.text) addEvent(ev2.text, ev2.color||'season');
         }
-        
-        // Sync wars
         if(data.wars && data.wars.active_wars) {
           data.wars.active_wars.forEach(w => {
-            if(getDiplo(w.attacker_id, w.defender_id) !== 'war') {
+            if(getDiplo(w.attacker_id, w.defender_id) !== 'war')
               setDiplo(w.attacker_id, w.defender_id, 'war');
-            }
           });
           buildDiploPanel();
         }
-        
         updateTopBar();
-      } catch(err) {
-        console.warn('[Village] Parse error:', err);
-      }
+      } catch(err) { console.warn('[Village]', err); }
     };
-    
     wsVillage.onclose = () => {
       backendConnected = false;
-      console.log('[Village] Déconnecté — reconnexion 5s');
+      document.getElementById('conn-dot').className = '';
       setTimeout(connectVillageBackend, 5000);
     };
-    
-    wsVillage.onerror = () => {
-      console.log('[Village] Backend inaccessible — mode local actif');
-    };
-  } catch(ex) {
-    console.log('[Village] Erreur WS:', ex);
-  }
+    wsVillage.onerror = () => {};
+  } catch(ex) {}
 }
 
-// Indicateur connexion
-const _connDot = document.createElement('div');
-_connDot.style.cssText = 'position:fixed;bottom:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#333;z-index:9999;transition:background 0.5s;';
-document.body.appendChild(_connDot);
+connectVillageBackend();
 setInterval(() => {
-  _connDot.style.background = backendConnected ? '#4a8a4a' : '#444';
+  document.getElementById('conn-dot').className = backendConnected ? 'connected' : '';
 }, 1000);
 
-connectVillageBackend();
-
 </script>
+<div id="conn-dot"></div>
 </body>
-</html> 
+</html>

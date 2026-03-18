@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════════
+   GENESIS ENGINE — shared.css
+   Styles communs aux deux vues
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Press+Start+2P&family=VT323:wght@400&display=swap');
+
+:root {
+  /* Monde divin */
+  --stone: #1a1610;
+  --parchment: #c8a96e;
+  --parchment-dark: #8b6f3a;
+  --parchment-light: #e8d5a3;
+  --divine: #f0c060;
+  --prayer: #6a4a8a;
+  --panel-bg: rgba(15,12,8,0.92);
+  --border: rgba(200,169,110,0.3);
+  /* Village */
+  --night: #0a0e1a;
+  --panel: #151c2e;
+  --border2: #2a3a5a;
+  --gold: #e8a840;
+  --amber: #f0c060;
+  --red: #e05050;
+  --green: #60c870;
+  --blue: #60b0e0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ── NAV BUTTON (shared between pages) ── */
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border: 1px solid rgba(240,192,96,0.4);
+  border-radius: 3px;
+  text-decoration: none;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--divine);
+  background: rgba(10,8,5,0.8);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-btn:hover {
+  background: rgba(240,192,96,0.1);
+  border-color: var(--divine);
+}
+
+/* ── CONNECTION DOT ── */
+#conn-dot {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #444;
+  z-index: 9999;
+  transition: background 0.5s;
+}
+#conn-dot.connected { background: #4a8a4a; box-shadow: 0 0 6px #4a8a4a; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(10,8,5,0.95);
+  border: 1px solid var(--divine);
+  border-radius: 4px;
+  padding: 10px 24px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--divine);
+  opacity: 0;
+  transition: all 0.4s ease;
+  pointer-events: none;
+  z-index: 2000;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+@keyframes glow-in { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);} }
+@keyframes snowfall { from{transform:translateY(-10px);} to{transform:translateY(calc(100vh+10px));} }
