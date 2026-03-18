@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesis Engine — Vue Village</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
+
+  :root {
+    --night: #0a0e1a;
+    --deep: #111827;
+    --panel: #151c2e;
+    --border: #2a3a5a;
+    --gold: #e8a840;
+    --amber: #f0c060;
+    --red: #e05050;
+    --green: #60c870;
+    --blue: #60b0e0;
+    --purple: #a060e0;
+    --spring-sky: #87ceeb;
+    --summer-sky: #5ba8d4;
+    --autumn-sky: #c87840;
+    --winter-sky: #8090b0;
+    --tile: 32px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--night); font-family:'VT323', monospace; color:#e0ddd0; }
+
+  /* ── LAYOUT ── */
+  #app { display:flex; flex-direction:column; width:100%; height:100vh; }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    display:flex; align-items:center; gap:16px; padding:6px 14px;
+    background:var(--panel); border-bottom:2px solid var(--border);
+    font-family:'Press Start 2P', monospace; font-size:7px;
+    flex-shrink:0; z-index:100; flex-wrap:wrap;
+  }
+  #topbar .title { color:var(--gold); font-size:9px; letter-spacing:1px; }
+  .stat-pill {
+    display:flex; align-items:center; gap:5px;
+    background:#1a2540; border:1px solid var(--border);
+    padding:3px 8px; border-radius:2px; white-space:nowrap;
+  }
+  .stat-pill .label { color:#8090a0; font-size:6px; }
+  .stat-pill .val { color:#e0ddd0; }
+  #season-badge {
+    padding:3px 10px; border-radius:2px; font-size:7px; font-weight:bold;
+    transition: background 1s;
+  }
+  .season-spring { background:#2a5a2a; color:#80e080; border:1px solid #60c060; }
+  .season-summer { background:#5a4a10; color:#f0c040; border:1px solid #d09020; }
+  .season-autumn { background:#5a2a10; color:#e08040; border:1px solid #c06020; }
+  .season-winter { background:#1a2a4a; color:#a0c0e0; border:1px solid #6080a0; }
+
+  /* ── MAIN AREA ── */
+  #main { display:flex; flex:1; overflow:hidden; }
+
+  /* ── CANVAS AREA ── */
+  #canvas-wrap {
+    flex:1; position:relative; overflow:hidden; cursor:crosshair;
+  }
+  #sky-bg {
+    position:absolute; inset:0; transition: background 3s;
+    background: linear-gradient(180deg, var(--spring-sky) 0%, #c8e8f8 100%);
+  }
+  #gameCanvas { position:absolute; inset:0; image-rendering:pixelated; }
+
+  /* ── ZOOM CONTROLS ── */
+  #zoom-controls {
+    position:absolute; bottom:12px; left:12px; display:flex; flex-direction:column; gap:4px;
+    font-family:'Press Start 2P', monospace; font-size:8px; z-index:20;
+  }
+  .zoom-btn {
+    width:28px; height:28px; background:var(--panel); border:1px solid var(--border);
+    color:var(--gold); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:14px; transition:background 0.1s;
+  }
+  .zoom-btn:hover { background:#1e2f50; }
+
+  /* ── VIEW TOGGLE ── */
+  #view-toggle {
+    position:absolute; top:8px; left:8px; display:flex; gap:4px; z-index:20;
+    font-family:'Press Start 2P', monospace; font-size:6px;
+  }
+  .view-btn {
+    padding:4px 8px; background:var(--panel); border:1px solid var(--border);
+    color:#8090a0; cursor:pointer; transition:all 0.1s;
+  }
+  .view-btn.active { background:#1e3050; color:var(--gold); border-color:var(--gold); }
+
+  /* ── RIGHT PANEL ── */
+  #rightpanel {
+    width:220px; background:var(--panel); border-left:2px solid var(--border);
+    display:flex; flex-direction:column; overflow:hidden; flex-shrink:0;
+    font-size:13px;
+  }
+  #rightpanel h3 {
+    font-family:'Press Start 2P', monospace; font-size:7px; color:var(--gold);
+    padding:8px 10px; border-bottom:1px solid var(--border); background:#111827;
+  }
+  .panel-section { padding:8px 10px; border-bottom:1px solid var(--border); }
+  .panel-section h4 { font-family:'Press Start 2P', monospace; font-size:6px; color:var(--amber); margin-bottom:6px; }
+
+  /* Tribe selector */
+  #tribe-list { display:flex; flex-direction:column; gap:3px; }
+  .tribe-entry {
+    display:flex; align-items:center; gap:6px; padding:4px 6px;
+    border:1px solid transparent; cursor:pointer; border-radius:2px;
+    transition:all 0.1s;
+  }
+  .tribe-entry:hover { background:#1a2540; border-color:var(--border); }
+  .tribe-entry.active { background:#1e3050; border-color:var(--gold); }
+  .tribe-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .tribe-name { font-size:12px; flex:1; }
+  .tribe-pop { font-family:'Press Start 2P', monospace; font-size:6px; color:var(--blue); }
+
+  /* Stats bars */
+  .stat-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  .stat-label { width:52px; font-size:11px; color:#8090a0; }
+  .stat-bar-bg { flex:1; height:6px; background:#1a2030; border:1px solid #2a3040; }
+  .stat-bar-fill { height:100%; transition:width 0.5s; }
+  .stat-val { width:28px; text-align:right; font-size:11px; }
+
+  /* Event log */
+  #event-log { flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:3px; }
+  .event-entry {
+    font-size:11px; padding:3px 5px; border-left:2px solid;
+    background:#0e1620; line-height:1.3;
+  }
+  .event-entry.hunt { border-color:#e08040; }
+  .event-entry.gather { border-color:var(--green); }
+  .event-entry.build { border-color:#8060e0; }
+  .event-entry.war   { border-color:var(--red); }
+  .event-entry.ally  { border-color:var(--blue); }
+  .event-entry.birth { border-color:var(--gold); }
+  .event-entry.death { border-color:#505060; }
+  .event-entry.season{ border-color:#a0c0e0; }
+  .event-entry .ev-time { color:#4a5a6a; font-size:10px; }
+
+  /* ── BOTTOM BAR ── */
+  #bottombar {
+    display:flex; align-items:center; gap:10px; padding:6px 12px;
+    background:var(--panel); border-top:2px solid var(--border);
+    flex-shrink:0; font-family:'Press Start 2P', monospace; font-size:6px;
+    flex-wrap:wrap;
+  }
+  .action-btn {
+    padding:5px 10px; border:1px solid var(--border); background:#1a2030;
+    color:#8090a0; cursor:pointer; font-family:'Press Start 2P', monospace;
+    font-size:6px; transition:all 0.15s;
+  }
+  .action-btn:hover { background:#1e3050; color:var(--gold); border-color:var(--gold); }
+  .action-btn.war-btn:hover { color:var(--red); border-color:var(--red); background:#2a1020; }
+  .action-btn.ally-btn:hover { color:var(--blue); border-color:var(--blue); background:#101a2a; }
+  #speed-display { color:var(--amber); }
+
+  /* ── PIXEL SPRITES (CSS) ── */
+  .sprite { image-rendering:pixelated; position:absolute; pointer-events:none; }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position:fixed; padding:6px 10px; background:var(--panel); border:1px solid var(--gold);
+    font-size:12px; pointer-events:none; z-index:999; opacity:0; transition:opacity 0.15s;
+    max-width:180px; line-height:1.4;
+  }
+  #tooltip.show { opacity:1; }
+  #tooltip .tt-name { font-family:'Press Start 2P', monospace; font-size:7px; color:var(--gold); margin-bottom:4px; }
+
+  /* Alliance/War indicator */
+  #diplomacy-panel {
+    position:absolute; top:8px; right:8px; z-index:20;
+    background:var(--panel); border:1px solid var(--border); padding:6px 8px;
+    font-size:11px; min-width:120px;
+  }
+  #diplomacy-panel h4 {
+    font-family:'Press Start 2P', monospace; font-size:6px; color:var(--gold); margin-bottom:5px;
+  }
+  .diplo-row { display:flex; align-items:center; gap:5px; margin-bottom:2px; }
+  .diplo-dot { width:8px; height:8px; border-radius:50%; }
+  .diplo-status { font-size:10px; }
+  .status-ally { color:var(--blue); }
+  .status-war  { color:var(--red); }
+  .status-neutral { color:#8090a0; }
+
+  /* Season overlay */
+  #season-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; transition:opacity 2s; }
+
+  /* Snow particles */
+  .snow-particle {
+    position:absolute; width:2px; height:2px; background:rgba(200,220,255,0.8);
+    border-radius:50%; animation:snowfall linear infinite; pointer-events:none;
+  }
+  @keyframes snowfall {
+    from { transform:translateY(-10px) translateX(0); }
+    to   { transform:translateY(calc(100vh + 10px)) translateX(20px); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:#0a0e1a; }
+  ::-webkit-scrollbar-thumb { background:#2a3a5a; }
+
+  /* Progress bar for construction */
+  .build-progress {
+    position:absolute; bottom:-4px; left:0; right:0; height:3px;
+    background:#1a2030; border:1px solid #2a3040;
+  }
+  .build-progress-fill { height:100%; background:#8060e0; transition:width 0.3s; }
+
+  #selected-info {
+    position:absolute; bottom:8px; right:8px; background:var(--panel);
+    border:1px solid var(--border); padding:8px; font-size:12px;
+    max-width:180px; z-index:20; display:none;
+  }
+  #selected-info.show { display:block; }
+  #selected-info .si-name { font-family:'Press Start 2P', monospace; font-size:7px; color:var(--amber); margin-bottom:5px; }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <span class="title">⚙ GENESIS</span>
+    <div class="stat-pill"><span class="label">AN</span><span class="val" id="stat-year">12400 BP</span></div>
+    <div class="stat-pill"><span class="label">JOUR</span><span class="val" id="stat-day">1</span></div>
+    <div class="stat-pill"><span class="label">POP</span><span class="val" id="stat-pop">47</span></div>
+    <div class="stat-pill"><span class="label">NOURR.</span><span class="val" id="stat-food">120</span></div>
+    <div id="season-badge" class="season-spring">🌱 PRINTEMPS</div>
+    <div class="stat-pill"><span class="label">TEMP.</span><span class="val" id="stat-temp">14°C</span></div>
+    <div class="stat-pill"><span class="label">BÂTIMENTS</span><span class="val" id="stat-buildings">3</span></div>
+    <div style="margin-left:auto; display:flex; gap:6px;">
+      <button class="action-btn" onclick="speedUp()">▶▶ VITESSE: <span id="speed-display">1x</span></button>
+      <button class="action-btn" onclick="togglePause()">⏸ <span id="pause-txt">PAUSE</span></button>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- CANVAS -->
+    <div id="canvas-wrap">
+      <div id="sky-bg"></div>
+      <div id="season-overlay"></div>
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- View toggle -->
+      <div id="view-toggle">
+        <button class="view-btn active" id="btn-village" onclick="setView('village')">🏘 VILLAGE</button>
+        <button class="view-btn" id="btn-world" onclick="setView('world')">🗺 MONDE</button>
+      </div>
+
+      <!-- Diplomacy panel -->
+      <div id="diplomacy-panel">
+        <h4>⚔ DIPLOMATIE</h4>
+        <div id="diplo-list"></div>
+      </div>
+
+      <!-- Zoom controls -->
+      <div id="zoom-controls">
+        <button class="zoom-btn" onclick="changeZoom(0.5)" title="Zoom out">−</button>
+        <button class="zoom-btn" onclick="changeZoom(-0.5)" title="Zoom in">+</button>
+      </div>
+
+      <!-- Selected entity info -->
+      <div id="selected-info">
+        <div class="si-name" id="si-name">—</div>
+        <div id="si-details"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="rightpanel">
+      <h3>🔥 TRIBUS</h3>
+      <div class="panel-section">
+        <div id="tribe-list"></div>
+      </div>
+
+      <div class="panel-section" id="tribe-stats-section" style="display:none">
+        <h4>📊 STATISTIQUES</h4>
+        <div id="tribe-stats"></div>
+      </div>
+
+      <div class="panel-section">
+        <h4>⚔ ACTIONS</h4>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="action-btn war-btn" onclick="startWar()" style="text-align:left">⚔ DÉCLARER GUERRE</button>
+          <button class="action-btn ally-btn" onclick="proposeAlliance()" style="text-align:left">🤝 PROPOSER ALLIANCE</button>
+          <button class="action-btn" onclick="sendHunters()" style="text-align:left">🏹 ENVOYER CHASSEURS</button>
+          <button class="action-btn" onclick="buildHouse()" style="text-align:left">🏠 CONSTRUIRE ABRI</button>
+        </div>
+      </div>
+
+      <h3 style="margin-top:auto">📜 ÉVÉNEMENTS</h3>
+      <div id="event-log"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div id="bottombar">
+    <span>🌍 GENESIS ENGINE v2 — VUE VILLAGE</span>
+    <span style="color:#4a5a6a">|</span>
+    <span>CLIC: sélectionner entité</span>
+    <span style="color:#4a5a6a">|</span>
+    <span>DRAG: déplacer la vue</span>
+    <span style="color:#4a5a6a">|</span>
+    <span>MOLETTE: zoom</span>
+    <span style="margin-left:auto; color:#4a5a6a" id="coord-display">x:0 y:0</span>
+  </div>
+</div>
+
+
+/* Extra event log style */
+.event-entry { font-size:11px; padding:3px 5px; border-left:2px solid #4a5a6a; background:#0e1620; line-height:1.3; margin-bottom:2px; }
+.event-entry.hunt { border-color:#e08040; }
+.event-entry.gather { border-color:#60c870; }
+.event-entry.build { border-color:#8060e0; }
+.event-entry.war   { border-color:#e05050; }
+.event-entry.ally  { border-color:#60b0e0; }
+.event-entry.birth { border-color:#e8a840; }
+.event-entry.death { border-color:#505060; }
+.event-entry.season{ border-color:#a0c0e0; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <span class="title">⚙ GENESIS ENGINE</span>
+    <div class="stat-pill"><span class="label">AN</span><span class="val" id="stat-year">12400 BP</span></div>
+    <div class="stat-pill"><span class="label">JOUR</span><span class="val" id="stat-day">1</span></div>
+    <div class="stat-pill"><span class="label">POP</span><span class="val" id="stat-pop">—</span></div>
+    <div class="stat-pill"><span class="label">NOURR.</span><span class="val" id="stat-food">—</span></div>
+    <div id="season-badge" class="season-spring">🌱 PRINTEMPS</div>
+    <div class="stat-pill"><span class="label">TEMP.</span><span class="val" id="stat-temp">14°C</span></div>
+    <div class="stat-pill"><span class="label">BÂTIMENTS</span><span class="val" id="stat-buildings">0</span></div>
+    <div style="margin-left:auto;display:flex;gap:6px;">
+      <a href="index.html" style="padding:5px 10px;background:#1a2030;border:1px solid #2a3a5a;color:#e8a840;font-family:'Press Start 2P',monospace;font-size:6px;text-decoration:none;display:flex;align-items:center;">← MONDE DIVIN</a>
+      <button class="action-btn" onclick="speedUp()">▶▶ VITESSE: <span id="speed-display">1x</span></button>
+      <button class="action-btn" onclick="togglePause()">⏸ <span id="pause-txt">PAUSE</span></button>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- CANVAS -->
+    <div id="canvas-wrap">
+      <div id="sky-bg"></div>
+      <div id="season-overlay"></div>
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- View toggle -->
+      <div id="view-toggle">
+        <button class="view-btn active" id="btn-village" onclick="setView('village')">🏘 VILLAGE</button>
+        <button class="view-btn" id="btn-world" onclick="setView('world')">🗺 MONDE</button>
+      </div>
+
+      <!-- Diplomacy panel -->
+      <div id="diplomacy-panel">
+        <h4>⚔ DIPLOMATIE</h4>
+        <div id="diplo-list"></div>
+      </div>
+
+      <!-- Zoom controls -->
+      <div id="zoom-controls">
+        <button class="zoom-btn" onclick="changeZoom(0.5)">−</button>
+        <button class="zoom-btn" onclick="changeZoom(-0.5)">+</button>
+      </div>
+
+      <!-- Selected entity info -->
+      <div id="selected-info">
+        <div class="si-name" id="si-name">—</div>
+        <div id="si-details"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="rightpanel">
+      <h3>🔥 TRIBUS</h3>
+      <div class="panel-section"><div id="tribe-list"></div></div>
+      <div class="panel-section" id="tribe-stats-section" style="display:none">
+        <h4>📊 STATISTIQUES</h4>
+        <div id="tribe-stats"></div>
+      </div>
+      <div class="panel-section">
+        <h4>⚔ ACTIONS</h4>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="action-btn war-btn" onclick="startWar()" style="text-align:left">⚔ DÉCLARER GUERRE</button>
+          <button class="action-btn ally-btn" onclick="proposeAlliance()" style="text-align:left">🤝 PROPOSER ALLIANCE</button>
+          <button class="action-btn" onclick="sendHunters()" style="text-align:left">🏹 ENVOYER CHASSEURS</button>
+          <button class="action-btn" onclick="buildHouse()" style="text-align:left">🏠 CONSTRUIRE ABRI</button>
+        </div>
+      </div>
+      <h3 style="margin-top:auto">📜 ÉVÉNEMENTS</h3>
+      <div id="event-log-village"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div id="bottombar">
+    <span>🌍 GENESIS ENGINE v2 — VUE VILLAGE PIXEL ART</span>
+    <span style="color:#4a5a6a">|</span>
+    <span>CLIC: sélectionner entité</span>
+    <span style="color:#4a5a6a">|</span>
+    <span>DRAG: déplacer la vue</span>
+    <span style="color:#4a5a6a">|</span>
+    <span>MOLETTE: zoom</span>
+    <span style="margin-left:auto;color:#4a5a6a" id="coord-display">x:0 y:0</span>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+
+// ════════════════════════════════════════════════════════════════════
+//  GENESIS ENGINE — Village View
+//  Dawn of Man style pixel-art village simulation
+// ════════════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+// ── WORLD CONFIG ──────────────────────────────────────────────────
+const W = {
+  TILE: 32,
+  COLS: 40, ROWS: 30,
+  ZOOM: 2.0,
+  ZOOM_MIN: 0.8, ZOOM_MAX: 4.0,
+  camX: 0, camY: 0,
+  dragging: false,
+  dragStart: null,
+  view: 'village', // village | world
+};
+
+// ── SEASON SYSTEM ─────────────────────────────────────────────────
+const SEASONS = [
+  { name:'Printemps', cls:'season-spring', emoji:'🌱', skyTop:'#87ceeb', skyBot:'#c8e8f8', temp:14, foodMod:1.2, huntMod:1.0, gatherMod:1.5 },
+  { name:'Été',       cls:'season-summer', emoji:'☀',  skyTop:'#5ba8d4', skyBot:'#a8d4f0', temp:24, foodMod:1.5, huntMod:1.2, gatherMod:1.8 },
+  { name:'Automne',   cls:'season-autumn', emoji:'🍂', skyTop:'#c87840', skyBot:'#e8a860', temp:8,  foodMod:0.8, huntMod:1.4, gatherMod:0.8 },
+  { name:'Hiver',     cls:'season-winter', emoji:'❄',  skyTop:'#3a4a6a', skyBot:'#8090b0', temp:-4, foodMod:0.2, huntMod:0.5, gatherMod:0.1 },
+];
+
+// ── GAME STATE ────────────────────────────────────────────────────
+const G = {
+  tick: 0,
+  day: 1,
+  year: 12400,
+  seasonIdx: 0,
+  dayInSeason: 0,
+  DAYS_PER_SEASON: 30,
+  speed: 1,
+  paused: false,
+  selectedEntity: null,
+  tribes: [],
+  entities: [],       // all living beings
+  animals: [],
+  buildings: [],
+  resources: [],      // food items on ground
+  snowParticles: [],
+  nextId: 1,
+};
+
+// ── TRIBE DATA ────────────────────────────────────────────────────
+const TRIBE_DEFS = [
+  { name:"Enfants de l'Aube",     color:'#e8a840', r:255, g:168, b:64  },
+  { name:"Peuple des Eaux",       color:'#60b0e0', r:96,  g:176, b:224 },
+  { name:"Fils de la Forêt",      color:'#60c870', r:96,  g:200, b:112 },
+  { name:"Clan du Feu Vieux",     color:'#e06868', r:224, g:104, b:104 },
+  { name:"Gardiens du Rocher",    color:'#b878e0', r:184, g:120, b:224 },
+];
+
+// Diplomacy: war/neutral/ally matrix
+const DIPLO = {}; // "tA-tB" -> 'neutral'|'war'|'ally'
+function diploKey(a,b) { return a<b ? `${a}-${b}` : `${b}-${a}`; }
+function getDiplo(a,b) { return DIPLO[diploKey(a,b)] || 'neutral'; }
+function setDiplo(a,b,v) { DIPLO[diploKey(a,b)] = v; }
+
+// ── TILE TYPES ────────────────────────────────────────────────────
+const TILES = {
+  GRASS:   { col:'#3a6a30', col2:'#4a7a40' },
+  DIRT:    { col:'#8a6a40', col2:'#9a7a50' },
+  WATER:   { col:'#2060a0', col2:'#3070b0', anim:true },
+  FOREST:  { col:'#1a4020', col2:'#2a5030' },
+  ROCK:    { col:'#6a6060', col2:'#7a7070' },
+  SNOW:    { col:'#d0d8e8', col2:'#e0e8f8' },
+  SAND:    { col:'#c8a850', col2:'#d8b860' },
+};
+
+// ── MAP GENERATION ────────────────────────────────────────────────
+let MAP = [];
+
+function noise(x, y, seed=42) {
+  const s = Math.sin(x*127.1 + y*311.7 + seed) * 43758.5453;
+  return s - Math.floor(s);
+}
+function smoothNoise(x,y,s) {
+  let v=0, amp=1, freq=1, max=0;
+  for(let i=0;i<4;i++) {
+    v += noise(x*freq/W.COLS, y*freq/W.ROWS, s+i*100)*amp;
+    max+=amp; amp*=0.5; freq*=2;
+  }
+  return v/max;
+}
+
+function generateMap() {
+  MAP = [];
+  for(let y=0;y<W.ROWS;y++) {
+    MAP[y]=[];
+    for(let x=0;x<W.COLS;x++) {
+      const h = smoothNoise(x,y,42);
+      const m = smoothNoise(x,y,99);
+      let type;
+      if(h < 0.25) type='WATER';
+      else if(h < 0.3) type='SAND';
+      else if(h < 0.65) type=(m>0.65)?'FOREST':'GRASS';
+      else if(h < 0.8) type='ROCK';
+      else type='ROCK';
+      MAP[y][x] = { type, h, var: noise(x,y,77) };
+    }
+  }
+}
+
+// ── ENTITY CREATION ───────────────────────────────────────────────
+function mkHuman(tribeIdx, x, y, role='gatherer') {
+  const t = G.tribes[tribeIdx];
+  return {
+    id: G.nextId++,
+    type:'human', tribeIdx,
+    x: x + (Math.random()-0.5)*0.6,
+    y: y + (Math.random()-0.5)*0.6,
+    tx:x, ty:y,         // target tile
+    px:0, py:0,         // pixel sub-pos for smooth move
+    role,               // hunter|gatherer|builder|guard|chief
+    name: HUMAN_NAMES[Math.floor(Math.random()*HUMAN_NAMES.length)],
+    age: 18+Math.floor(Math.random()*30),
+    gender: Math.random()>0.5?'M':'F',
+    hp:100, maxHp:100,
+    hunger:80, maxHunger:100,
+    state:'idle',       // idle|walk|hunt|gather|build|fight|flee|sleep
+    stateTimer:0,
+    animFrame:0, animTimer:0,
+    dir:0,              // 0=right,1=left,2=down,3=up
+    carrying:null,      // null|'food'|'wood'|'stone'
+    carryAmt:0,
+    target:null,        // entity id
+    buildTarget:null,
+    walkPath:[],
+    memory:{ lastHunt:0, lastGather:0 },
+    color: TRIBE_DEFS[tribeIdx].color,
+    cr: TRIBE_DEFS[tribeIdx].r,
+    cg: TRIBE_DEFS[tribeIdx].g,
+    cb: TRIBE_DEFS[tribeIdx].b,
+  };
+}
+
+function mkAnimal(type, x, y) {
+  const defs = {
+    deer:   { name:'Cerf',    hp:40, spd:0.04, flee:true,  food:20, col:'#c0904a', w:20, h:16 },
+    boar:   { name:'Sanglier',hp:60, spd:0.025,flee:false, food:30, col:'#7a5030', w:18, h:14 },
+    rabbit: { name:'Lapin',   hp:10, spd:0.06, flee:true,  food:8,  col:'#c8b890', w:10, h:8  },
+    bison:  { name:'Bison',   hp:120,spd:0.02, flee:false, food:50, col:'#5a3a20', w:28, h:20 },
+    fish:   { name:'Poisson', hp:8,  spd:0.03, flee:true,  food:12, col:'#4090c0', w:12, h:6  },
+    bird:   { name:'Oiseau',  hp:6,  spd:0.08, flee:true,  food:5,  col:'#708090', w:10, h:8  },
+  };
+  const d = defs[type];
+  return {
+    id: G.nextId++,
+    type:'animal', kind:type, ...d,
+    x, y, tx:x, ty:y,
+    dir: Math.random()>0.5?0:1,
+    animFrame:0, animTimer:0,
+    state:'wander', stateTimer:Math.floor(Math.random()*60)+20,
+    wanderTarget:{x:x+(Math.random()-0.5)*8, y:y+(Math.random()-0.5)*8},
+    fleeFrom:null,
+    alive:true,
+    onWater: type==='fish',
+  };
+}
+
+function mkBuilding(type, tx, ty, tribeIdx) {
+  const defs = {
+    camp:    { name:'Campement',  w:1,h:1, hp:30, maxHp:30,  col:'#c08840', buildTime:60  },
+    hut:     { name:'Hutte',      w:1,h:1, hp:80, maxHp:80,  col:'#a06828', buildTime:120 },
+    longhouse:{ name:'Grande Hutte',w:2,h:1,hp:200,maxHp:200,col:'#8a5020', buildTime:300 },
+    storehouse:{ name:'Réserve',  w:1,h:1, hp:60, maxHp:60,  col:'#6a4820', buildTime:150 },
+    palisade:{ name:'Palissade',  w:1,h:1, hp:40, maxHp:40,  col:'#6a5030', buildTime:90  },
+    firepit: { name:'Foyer',      w:1,h:1, hp:20, maxHp:20,  col:'#e04020', buildTime:30  },
+  };
+  const d = defs[type];
+  return {
+    id: G.nextId++,
+    type:'building', kind:type, tribeIdx, ...d,
+    tx, ty,
+    progress:0, // 0..maxHp = under construction
+    alive:true,
+  };
+}
+
+const HUMAN_NAMES = ['Arak','Bura','Ceda','Dorn','Efa','Grun','Hara','Ival','Jora','Keth',
+  'Lana','Moru','Neda','Oran','Pira','Qura','Reva','Sola','Tala','Urna',
+  'Vira','Wena','Xara','Yola','Zura','Akor','Bena','Cela','Dura','Eros'];
+
+// ── INITIALIZE WORLD ──────────────────────────────────────────────
+function initWorld() {
+  generateMap();
+  // Init tribes
+  const SPAWN_CENTERS = [
+    {x:10,y:8},{x:28,y:6},{x:10,y:22},{x:28,y:20},{x:19,y:14}
+  ];
+  for(let i=0;i<5;i++) {
+    const sc = SPAWN_CENTERS[i];
+    const tribe = {
+      idx:i, name:TRIBE_DEFS[i].name, color:TRIBE_DEFS[i].color,
+      cx: sc.x, cy: sc.y,
+      food:80+Math.floor(Math.random()*60),
+      maxFood:200,
+      pop:0,
+      faith:0.5+Math.random()*0.3,
+      tension:Math.random()*0.3,
+      alive:true,
+      buildings:[],
+      members:[],
+    };
+    G.tribes.push(tribe);
+
+    // Spawn members
+    const pop = 6+Math.floor(Math.random()*6);
+    for(let j=0;j<pop;j++) {
+      const roles = ['hunter','gatherer','gatherer','builder','guard'];
+      const h = mkHuman(i, sc.x+(Math.random()-0.5)*5, sc.y+(Math.random()-0.5)*5,
+                        roles[j % roles.length]);
+      G.entities.push(h);
+      tribe.members.push(h.id);
+      tribe.pop++;
+    }
+
+    // Initial buildings
+    G.buildings.push(mkBuilding('firepit', sc.x, sc.y, i));
+    G.buildings.push(mkBuilding('camp', sc.x+1, sc.y, i));
+
+    // Init diplomacy
+    for(let k=0;k<i;k++) setDiplo(i,k,'neutral');
+  }
+
+  // Make some random alliances/wars
+  setDiplo(0,2,'ally');
+  setDiplo(1,3,'war');
+  setDiplo(3,4,'ally');
+
+  // Spawn animals
+  spawnAnimals();
+
+  // Center camera on tribe 0
+  const sc0 = SPAWN_CENTERS[0];
+  W.camX = sc0.x * W.TILE - canvas.width/(2*W.ZOOM);
+  W.camY = sc0.y * W.TILE - canvas.height/(2*W.ZOOM);
+
+  // Initial events
+  addEvent('Le monde s\'éveille. Les premières tribus allument leurs feux.','season');
+  addEvent(`${G.tribes[0].name} : ${G.tribes[0].pop} âmes autour du foyer.`,'birth');
+
+  buildTribeList();
+  buildDiploPanel();
+}
+
+function spawnAnimals() {
+  const animalTypes = ['deer','boar','rabbit','bison','bird'];
+  const waterTypes = ['fish'];
+  for(let i=0;i<60;i++) {
+    const type = animalTypes[Math.floor(Math.random()*animalTypes.length)];
+    let x,y,tries=0;
+    do {
+      x = Math.random()*W.COLS; y = Math.random()*W.ROWS; tries++;
+      if(tries>20) break;
+    } while(getTile(Math.floor(x),Math.floor(y)) === 'WATER');
+    G.animals.push(mkAnimal(type, x, y));
+  }
+  // Fish in water
+  for(let i=0;i<20;i++) {
+    let x,y,tries=0;
+    do {
+      x = Math.random()*W.COLS; y = Math.random()*W.ROWS; tries++;
+      if(tries>30) break;
+    } while(getTile(Math.floor(x),Math.floor(y)) !== 'WATER');
+    G.animals.push(mkAnimal('fish', x, y));
+  }
+}
+
+function getTile(x,y) {
+  if(x<0||y<0||x>=W.COLS||y>=W.ROWS) return 'ROCK';
+  return MAP[y][x].type;
+}
+function isWalkable(x,y) {
+  const t = getTile(Math.floor(x),Math.floor(y));
+  return t!=='WATER' && t!=='ROCK';
+}
+
+// ── PIXEL ART SPRITES ─────────────────────────────────────────────
+function drawHuman(e) {
+  const px = e.x*W.TILE, py = e.y*W.TILE;
+  const f = Math.floor(e.animFrame) % 4;
+  const walking = (e.state==='walk'||e.state==='hunt'||e.state==='gather'||e.state==='build');
+  const legSwing = walking ? (f<2 ? 2 : -2) : 0;
+
+  ctx.save();
+  ctx.translate(px, py);
+  if(e.dir===1) { ctx.scale(-1,1); }
+
+  const r=e.cr, g=e.cg, b=e.cb;
+  const skinR=220, skinG=180, skinB=140;
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0,11,5,2,0,0,Math.PI*2); ctx.fill();
+
+  // Legs
+  ctx.fillStyle=`rgb(${Math.max(0,r-60)},${Math.max(0,g-60)},${Math.max(0,b-60)})`;
+  ctx.fillRect(-3+legSwing, 5, 3, 6);
+  ctx.fillRect(0-legSwing,  5, 3, 6);
+
+  // Body (tribe color)
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-4, -2, 8, 8);
+
+  // Arms
+  ctx.fillStyle=`rgb(${Math.max(0,r-40)},${Math.max(0,g-40)},${Math.max(0,b-40)})`;
+  const armSwing = walking ? (f<2?3:-3):0;
+  ctx.fillRect(-6, -1+armSwing, 3, 5);
+  ctx.fillRect(3,  -1-armSwing, 3, 5);
+
+  // Neck
+  ctx.fillStyle=`rgb(${skinR},${skinG},${skinB})`;
+  ctx.fillRect(-1,-4,2,3);
+
+  // Head
+  ctx.fillStyle=`rgb(${skinR},${skinG},${skinB})`;
+  ctx.fillRect(-4,-10,8,8);
+
+  // Hair (dark)
+  ctx.fillStyle='#3a2a18';
+  ctx.fillRect(-4,-10,8,3);
+
+  // Eyes
+  ctx.fillStyle='#1a1a1a';
+  ctx.fillRect(-2,-6,2,2);
+  ctx.fillRect(1,-6,2,2);
+
+  // Weapon / tool
+  if(e.role==='hunter') {
+    ctx.fillStyle='#8a6030'; ctx.fillRect(4,-8,2,14);
+    ctx.fillStyle='#c0c0c0'; ctx.fillRect(4,-8,2,4);
+  } else if(e.role==='builder') {
+    ctx.fillStyle='#8a6030'; ctx.fillRect(4,-5,2,10);
+    ctx.fillStyle='#808080'; ctx.fillRect(3,-7,5,4);
+  }
+
+  // Carry indicator
+  if(e.carrying) {
+    ctx.fillStyle = e.carrying==='food'?'#e05030': e.carrying==='wood'?'#7a5020':'#909090';
+    ctx.fillRect(-3,-14,6,4);
+  }
+
+  // State indicator
+  if(e.state==='fight') {
+    ctx.fillStyle='rgba(255,0,0,0.7)';
+    ctx.font='8px monospace';
+    ctx.fillText('⚔',−4,−16);
+  }
+
+  ctx.restore();
+
+  // Name tag (only when zoomed in enough)
+  if(W.ZOOM >= 2.5) {
+    ctx.save();
+    ctx.font='6px "Press Start 2P"';
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    ctx.fillRect(px-18, py-17, 36, 8);
+    ctx.fillStyle=e.color;
+    ctx.textAlign='center';
+    ctx.fillText(e.name.substring(0,6), px, py-11);
+    ctx.restore();
+  }
+
+  // HP bar (if hurt)
+  if(e.hp < e.maxHp) {
+    ctx.fillStyle='#400000';
+    ctx.fillRect(px-8, py-14, 16, 2);
+    ctx.fillStyle='#e03030';
+    ctx.fillRect(px-8, py-14, 16*(e.hp/e.maxHp), 2);
+  }
+}
+
+function drawAnimal(a) {
+  if(!a.alive) return;
+  const px = a.x*W.TILE, py = a.y*W.TILE;
+  const f = Math.floor(a.animFrame)%4;
+  const moving = a.state!=='idle';
+  const legSwing = moving ? (f<2?2:-2):0;
+
+  ctx.save();
+  ctx.translate(px, py);
+  if(a.dir===1) ctx.scale(-1,1);
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(0, a.h/2-2, a.w/3, 2, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  const [r,g,b] = hexToRgb(a.col);
+
+  switch(a.kind) {
+    case 'deer': drawDeer(r,g,b,legSwing); break;
+    case 'boar': drawBoar(r,g,b,legSwing); break;
+    case 'rabbit': drawRabbit(r,g,b,f); break;
+    case 'bison': drawBison(r,g,b,legSwing); break;
+    case 'fish': drawFish(r,g,b,f); break;
+    case 'bird': drawBird(r,g,b,f); break;
+    default: drawDeer(r,g,b,legSwing);
+  }
+
+  ctx.restore();
+
+  if(W.ZOOM >= 2.5) {
+    ctx.save();
+    ctx.font='5px "Press Start 2P"';
+    ctx.fillStyle='rgba(0,0,0,0.4)';
+    ctx.fillRect(px-14, py-15, 28, 7);
+    ctx.fillStyle='#e0c080';
+    ctx.textAlign='center';
+    ctx.fillText(a.name.substring(0,5), px, py-10);
+    ctx.restore();
+  }
+}
+
+function drawDeer(r,g,b,ls) {
+  // legs
+  ctx.fillStyle=`rgb(${r-20},${g-20},${b-20})`;
+  ctx.fillRect(-8, 2+ls,  3, 8);
+  ctx.fillRect(-3, 2-ls,  3, 8);
+  ctx.fillRect(1,  2+ls,  3, 8);
+  ctx.fillRect(5,  2-ls,  3, 8);
+  // body
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-8,-2, 16,8);
+  // neck
+  ctx.fillRect(-2,-8, 4,8);
+  // head
+  ctx.fillRect(-4,-12, 8,6);
+  // snout
+  ctx.fillRect(3,-11,3,4);
+  // eye
+  ctx.fillStyle='#1a1a1a'; ctx.fillRect(-1,-10,2,2);
+  // antlers
+  ctx.fillStyle=`rgb(${r-40},${g-40},${b-40})`;
+  ctx.fillRect(-4,-16,2,5); ctx.fillRect(-6,-16,5,2);
+  ctx.fillRect(1,-16,2,5);  ctx.fillRect(0,-16,5,2);
+}
+
+function drawBoar(r,g,b,ls) {
+  ctx.fillStyle=`rgb(${r-20},${g-20},${b-20})`;
+  ctx.fillRect(-7,3+ls,3,6); ctx.fillRect(-3,3-ls,3,6);
+  ctx.fillRect(1,3+ls,3,6);  ctx.fillRect(5,3-ls,3,6);
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-8,-4,18,10);
+  ctx.fillRect(-2,-8,8,6);
+  ctx.fillRect(6,-6,5,5);
+  ctx.fillStyle='#1a1a1a'; ctx.fillRect(9,-5,2,2);
+  // tusk
+  ctx.fillStyle='#e8d8b0'; ctx.fillRect(10,-2,3,2);
+  // mane
+  ctx.fillStyle=`rgb(${r+30},${g+20},${b})`;
+  ctx.fillRect(-8,-7,18,3);
+}
+
+function drawRabbit(r,g,b,f) {
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-4,0,8,6);
+  ctx.fillRect(-3,-5,6,6);
+  ctx.fillRect(-2,-9,2,5); ctx.fillRect(1,-9,2,5); // ears
+  ctx.fillStyle='#1a1a1a'; ctx.fillRect(-1,-4,2,2);
+  ctx.fillStyle='#ffaaaa'; ctx.fillRect(1,-2,2,2); // nose
+  // tail
+  ctx.fillStyle='#f0f0f0'; ctx.fillRect(-5,1,3,3);
+  if(f%2===0) { // hop
+    ctx.fillStyle=`rgb(${r-20},${g-20},${b-20})`;
+    ctx.fillRect(-3,5,2,3); ctx.fillRect(1,5,2,3);
+  }
+}
+
+function drawBison(r,g,b,ls) {
+  ctx.fillStyle=`rgb(${r-20},${g-20},${b-20})`;
+  ctx.fillRect(-10,4+ls,4,8); ctx.fillRect(-4,4-ls,4,8);
+  ctx.fillRect(2,4+ls,4,8);   ctx.fillRect(8,4-ls,4,8);
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-12,-4,22,12);
+  ctx.fillRect(-2,-10,10,8);
+  // hump
+  ctx.fillRect(-12,-8,8,8);
+  ctx.fillStyle='#3a2818';
+  ctx.fillRect(-2,-10,10,4);  ctx.fillRect(-12,-8,8,4);
+  ctx.fillStyle='#1a1a1a'; ctx.fillRect(4,-8,2,2);
+  // horns
+  ctx.fillStyle='#c8b090';
+  ctx.fillRect(2,-12,2,4); ctx.fillRect(6,-12,2,4);
+}
+
+function drawFish(r,g,b,f) {
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-5,-2,10,4);
+  ctx.fillRect(-7,0,3,2); ctx.fillRect(-7,-2,3,2); // tail
+  ctx.fillStyle='rgba(200,240,255,0.5)';
+  ctx.fillRect(-2,-1,6,2);
+  ctx.fillStyle='#1a1a1a'; ctx.fillRect(3,-1,2,2);
+  if(f%2===0) { ctx.fillStyle=`rgba(${r+30},${g+30},${b+30},0.4)`; ctx.fillRect(-4,1,8,1); }
+}
+
+function drawBird(r,g,b,f) {
+  ctx.fillStyle=`rgb(${r},${g},${b})`;
+  ctx.fillRect(-4,-2,8,4);
+  const wingY = f%2===0 ? -4 : -2;
+  ctx.fillRect(-7,wingY,4,3); ctx.fillRect(3,wingY,4,3);
+  ctx.fillStyle='#e0c060'; ctx.fillRect(4,-2,4,2); // beak
+  ctx.fillStyle='#1a1a1a'; ctx.fillRect(2,-1,2,2);
+}
+
+function drawBuilding(b) {
+  const px = b.tx*W.TILE, py = b.ty*W.TILE;
+  const pct = b.progress/b.hp;
+  const isBuilt = pct >= 1;
+
+  ctx.save();
+  ctx.translate(px, py);
+
+  const alpha = isBuilt ? 1.0 : 0.4 + pct*0.5;
+  ctx.globalAlpha = alpha;
+
+  switch(b.kind) {
+    case 'firepit':
+      // Stones circle
+      ctx.fillStyle='#808070'; ctx.fillRect(-12,-6,24,12);
+      ctx.fillStyle='#404040'; ctx.fillRect(-8,-4,16,8);
+      if(isBuilt) {
+        // Fire animation
+        const t = Date.now()/200;
+        ctx.fillStyle='#e04010';
+        ctx.fillRect(-4,-6,8,6);
+        ctx.fillStyle='#f08010';
+        ctx.fillRect(-3,-8+Math.sin(t)*1,6,5);
+        ctx.fillStyle='#ffe060';
+        ctx.fillRect(-2,-10+Math.cos(t)*1,4,4);
+      }
+      break;
+    case 'camp':
+      // Tent shape
+      ctx.fillStyle='#c8a060';
+      ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(-16,8); ctx.lineTo(16,8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#a07840';
+      ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(16,8); ctx.lineTo(8,8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#604020'; ctx.fillRect(-4,0,8,8);
+      break;
+    case 'hut':
+      // Round hut
+      ctx.fillStyle='#8a6030'; ctx.fillRect(-14,-4,28,14);
+      ctx.fillStyle='#a87840'; ctx.fillRect(-16,-4,4,14); ctx.fillRect(12,-4,4,14);
+      ctx.fillStyle='#c8a060';
+      ctx.beginPath(); ctx.moveTo(-18,-4); ctx.lineTo(0,-22); ctx.lineTo(18,-4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#a07840';
+      ctx.beginPath(); ctx.moveTo(0,-22); ctx.lineTo(18,-4); ctx.lineTo(10,-4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#604020'; ctx.fillRect(-4,2,8,8);
+      break;
+    case 'longhouse':
+      ctx.fillStyle='#7a5020'; ctx.fillRect(-28,-6,56,16);
+      ctx.fillStyle='#b88840';
+      ctx.beginPath(); ctx.moveTo(-30,-6); ctx.lineTo(0,-20); ctx.lineTo(30,-6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#a07030';
+      ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(30,-6); ctx.lineTo(20,-6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#604020';
+      ctx.fillRect(-20,2,8,8); ctx.fillRect(12,2,8,8);
+      break;
+    case 'storehouse':
+      ctx.fillStyle='#6a4818'; ctx.fillRect(-12,0,24,12);
+      ctx.fillStyle='#8a6028'; ctx.fillRect(-14,-2,28,4);
+      ctx.fillStyle='#a08040';
+      ctx.beginPath(); ctx.moveTo(-16,-2); ctx.lineTo(0,-14); ctx.lineTo(16,-2); ctx.closePath(); ctx.fill();
+      break;
+    case 'palisade':
+      ctx.fillStyle='#6a5030';
+      for(let i=-12;i<=12;i+=5) { ctx.fillRect(i,-14,4,22); }
+      break;
+  }
+
+  ctx.globalAlpha=1;
+
+  // Construction progress bar
+  if(!isBuilt) {
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(-16,10,32,5);
+    ctx.fillStyle='#8060e0';
+    ctx.fillRect(-16,10,32*pct,5);
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    ctx.font='5px monospace';
+    ctx.textAlign='center';
+    ctx.fillText(`${Math.floor(pct*100)}%`, 0, 18);
+  }
+
+  // Tribe color dot
+  ctx.fillStyle = TRIBE_DEFS[b.tribeIdx].color;
+  ctx.fillRect(10,-18,4,4);
+
+  ctx.restore();
+}
+
+function drawResourceDrop(r) {
+  const px = r.x*W.TILE, py = r.y*W.TILE;
+  ctx.save(); ctx.translate(px,py);
+  if(r.kind==='food') {
+    ctx.fillStyle='#e05030';
+    ctx.fillRect(-3,-3,6,6);
+    ctx.fillStyle='#c03020'; ctx.fillRect(-3,-3,6,3);
+  } else if(r.kind==='wood') {
+    ctx.fillStyle='#8a5020'; ctx.fillRect(-5,-2,10,4);
+    ctx.fillStyle='#6a3810'; ctx.fillRect(-5,-2,10,2);
+  }
+  ctx.restore();
+}
+
+// ── SEASON EFFECTS ────────────────────────────────────────────────
+function updateSeasonVisuals() {
+  const s = SEASONS[G.seasonIdx];
+  document.getElementById('sky-bg').style.background =
+    `linear-gradient(180deg, ${s.skyTop} 0%, ${s.skyBot} 100%)`;
+  const badge = document.getElementById('season-badge');
+  badge.textContent = `${s.emoji} ${s.name.toUpperCase()}`;
+  badge.className = `season-${s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}`;
+  // Remap
+  const remap = {'printemps':'spring','ete':'summer','automne':'autumn','hiver':'winter'};
+  const key = s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  badge.className = `season-${remap[key]||'spring'}`;
+
+  document.getElementById('stat-temp').textContent = `${s.temp}°C`;
+
+  // Snow particles
+  const overlay = document.getElementById('season-overlay');
+  overlay.innerHTML='';
+  if(G.seasonIdx===3) {
+    for(let i=0;i<40;i++) {
+      const p=document.createElement('div');
+      p.className='snow-particle';
+      p.style.left=Math.random()*100+'%';
+      p.style.animationDuration=(3+Math.random()*4)+'s';
+      p.style.animationDelay=(-Math.random()*4)+'s';
+      p.style.opacity=0.3+Math.random()*0.5;
+      overlay.appendChild(p);
+    }
+  }
+}
+
+// ── AI BEHAVIORS ──────────────────────────────────────────────────
+function updateHuman(e) {
+  e.animTimer++;
+  if(e.animTimer>8) { e.animTimer=0; e.animFrame=(e.animFrame+1)%4; }
+
+  e.stateTimer--;
+  const season = SEASONS[G.seasonIdx];
+
+  // Hunger
+  if(G.tick % 30 === 0) {
+    e.hunger -= 2;
+    if(e.hunger <= 0) {
+      e.hp -= 5;
+      e.hunger = 0;
+      if(e.hp<=0) { killHuman(e); return; }
+    }
+  }
+
+  // Sleep at night (winter = more sleep)
+  const isNight = (G.tick % 100) > 75;
+  if(isNight && Math.random()<0.3) { e.state='sleep'; e.stateTimer=30; return; }
+
+  // State machine
+  switch(e.state) {
+    case 'idle':
+      e.stateTimer = 20+Math.floor(Math.random()*30);
+      chooseNextAction(e, season);
+      break;
+
+    case 'walk':
+      moveTowardTarget(e, 0.035);
+      if(dist(e,{x:e.tx,y:e.ty})<0.3) {
+        e.state='idle'; e.stateTimer=0;
+        if(e.walkPath.length>0) {
+          const next=e.walkPath.shift();
+          e.tx=next.x; e.ty=next.y;
+          e.state='walk';
+        }
+      }
+      break;
+
+    case 'hunt':
+      if(!e.target) { e.state='idle'; break; }
+      const prey = G.animals.find(a=>a.id===e.target && a.alive);
+      if(!prey) { e.state='idle'; e.target=null; break; }
+      prey.state='flee'; prey.fleeFrom={x:e.x,y:e.y};
+      moveToward(e, prey.x, prey.y, 0.045);
+      e.dir = prey.x > e.x ? 0 : 1;
+      if(dist(e,prey)<0.6) {
+        // Catch!
+        prey.hp -= 15 + Math.random()*10;
+        if(prey.hp<=0) {
+          prey.alive=false;
+          e.carrying='food'; e.carryAmt=prey.food;
+          e.state='walk';
+          e.tx = G.tribes[e.tribeIdx].cx;
+          e.ty = G.tribes[e.tribeIdx].cy;
+          const tribe = G.tribes[e.tribeIdx];
+          tribe.food = Math.min(tribe.maxFood, tribe.food + prey.food * season.huntMod);
+          addEvent(`${e.name} (${tribe.name}) a tué un ${prey.name} ! +${prey.food} nourriture.`,'hunt');
+          e.target=null;
+        }
+      }
+      break;
+
+    case 'gather':
+      if(e.stateTimer<=0) {
+        const tribe = G.tribes[e.tribeIdx];
+        const gain = Math.floor((4+Math.random()*6)*season.gatherMod);
+        tribe.food = Math.min(tribe.maxFood, tribe.food + gain);
+        e.carrying='food'; e.carryAmt=gain;
+        e.state='walk';
+        e.tx = tribe.cx+(Math.random()-0.5)*2;
+        e.ty = tribe.cy+(Math.random()-0.5)*2;
+        if(gain>0) addEvent(`${e.name} (${tribe.name}) a cueilli ${gain} nourriture.`,'gather');
+      }
+      break;
+
+    case 'build':
+      if(e.buildTarget) {
+        const bldg = G.buildings.find(b=>b.id===e.buildTarget);
+        if(bldg && bldg.progress < bldg.hp) {
+          moveToward(e, bldg.tx, bldg.ty, 0.02);
+          if(dist(e,{x:bldg.tx,y:bldg.ty})<1.2) {
+            bldg.progress = Math.min(bldg.hp, bldg.progress+0.5);
+            if(bldg.progress>=bldg.hp) {
+              addEvent(`${G.tribes[e.tribeIdx].name} : ${bldg.name} terminée !`,'build');
+              e.buildTarget=null; e.state='idle';
+            }
+          }
+        } else { e.state='idle'; e.buildTarget=null; }
+      } else { e.state='idle'; }
+      break;
+
+    case 'fight':
+      if(!e.target) { e.state='idle'; break; }
+      const enemy = G.entities.find(h=>h.id===e.target);
+      if(!enemy || enemy.hp<=0) { e.state='idle'; e.target=null; break; }
+      moveToward(e, enemy.x, enemy.y, 0.04);
+      e.dir = enemy.x>e.x?0:1;
+      if(dist(e,enemy)<0.6) {
+        enemy.hp -= 5+Math.random()*10;
+        if(enemy.hp<=0) {
+          addEvent(`⚔ ${e.name} (${G.tribes[e.tribeIdx].name}) a tué ${enemy.name} !`,'war');
+          killHuman(enemy);
+          e.state='idle'; e.target=null;
+        }
+      }
+      break;
+
+    case 'sleep':
+      if(e.stateTimer<=0) e.state='idle';
+      if(e.hp<e.maxHp) e.hp=Math.min(e.maxHp, e.hp+0.5);
+      break;
+  }
+}
+
+function chooseNextAction(e, season) {
+  const tribe = G.tribes[e.tribeIdx];
+  const hungry = e.hunger < 40 || tribe.food < 20;
+
+  // Fight if at war
+  if(e.role==='guard' || e.role==='hunter') {
+    for(let t2=0;t2<G.tribes.length;t2++) {
+      if(t2===e.tribeIdx) continue;
+      if(getDiplo(e.tribeIdx,t2)==='war') {
+        const enemy = G.entities.find(h=>h.tribeIdx===t2 && h.hp>0 && dist(e,h)<8);
+        if(enemy) {
+          e.state='fight'; e.target=enemy.id;
+          return;
+        }
+      }
+    }
+  }
+
+  // Hunt or gather for food
+  if((hungry || Math.random()<0.3) && season.foodMod > 0.15) {
+    if(e.role==='hunter' && G.animals.filter(a=>a.alive&&!a.onWater).length>0) {
+      const closeAnimals = G.animals.filter(a=>a.alive&&!a.onWater&&dist(e,a)<12)
+        .sort((a,b)=>dist(e,a)-dist(e,b));
+      if(closeAnimals.length>0) {
+        e.state='hunt'; e.target=closeAnimals[0].id;
+        return;
+      }
+    }
+    // Gather
+    if(season.gatherMod > 0.05) {
+      e.state='gather';
+      e.stateTimer = Math.floor(30+Math.random()*40/season.gatherMod);
+      // Walk to forest/grass
+      let gx=e.x+(Math.random()-0.5)*6, gy=e.y+(Math.random()-0.5)*6;
+      gx=Math.max(0,Math.min(W.COLS-1,gx)); gy=Math.max(0,Math.min(W.ROWS-1,gy));
+      e.tx=gx; e.ty=gy; e.state='walk';
+      setTimeout(()=>{ if(e.state==='walk') e.state='gather'; },500);
+      return;
+    }
+  }
+
+  // Build if builder
+  if(e.role==='builder') {
+    const unbuilt = G.buildings.find(b=>b.tribeIdx===e.tribeIdx && b.progress<b.hp);
+    if(unbuilt) { e.state='build'; e.buildTarget=unbuilt.id; return; }
+  }
+
+  // Idle wander
+  e.state='walk';
+  e.tx = tribe.cx+(Math.random()-0.5)*6;
+  e.ty = tribe.cy+(Math.random()-0.5)*6;
+  e.tx=Math.max(0,Math.min(W.COLS-1,e.tx));
+  e.ty=Math.max(0,Math.min(W.ROWS-1,e.ty));
+}
+
+function moveTowardTarget(e, spd) {
+  moveToward(e, e.tx, e.ty, spd);
+}
+function moveToward(e, tx, ty, spd) {
+  const dx=tx-e.x, dy=ty-e.y;
+  const d=Math.sqrt(dx*dx+dy*dy);
+  if(d>0.05) {
+    e.x+=dx/d*spd; e.y+=dy/d*spd;
+    e.dir = dx>0?0:1;
+    if(!isWalkable(e.x,e.y)) { e.x-=dx/d*spd; e.y-=dy/d*spd; e.state='idle'; }
+  }
+}
+function dist(a,b) { const dx=a.x-b.x,dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
+
+function updateAnimal(a) {
+  a.animTimer++;
+  if(a.animTimer>6) { a.animTimer=0; a.animFrame=(a.animFrame+1)%4; }
+  a.stateTimer--;
+
+  if(a.state==='flee' && a.fleeFrom) {
+    const dx=a.x-a.fleeFrom.x, dy=a.y-a.fleeFrom.y;
+    const d=Math.sqrt(dx*dx+dy*dy)||1;
+    const spd = 0.06 + Math.random()*0.02;
+    a.x+=dx/d*spd; a.y+=dy/d*spd;
+    a.dir=dx>0?0:1;
+    a.x=Math.max(0,Math.min(W.COLS-1,a.x));
+    a.y=Math.max(0,Math.min(W.ROWS-1,a.y));
+    if(d>10) { a.state='wander'; a.fleeFrom=null; a.stateTimer=60; }
+    return;
+  }
+
+  if(a.stateTimer<=0) {
+    a.state = Math.random()<0.3?'idle':'wander';
+    a.stateTimer=40+Math.floor(Math.random()*80);
+    if(a.state==='wander') {
+      a.wanderTarget={
+        x:Math.max(0,Math.min(W.COLS-1, a.x+(Math.random()-0.5)*8)),
+        y:Math.max(0,Math.min(W.ROWS-1, a.y+(Math.random()-0.5)*8)),
+      };
+      if(a.onWater) {
+        // Fish stay in water
+        while(getTile(Math.floor(a.wanderTarget.x),Math.floor(a.wanderTarget.y))!=='WATER') {
+          a.wanderTarget={x:a.x+(Math.random()-0.5)*4, y:a.y+(Math.random()-0.5)*4};
+        }
+      }
+    }
+  }
+
+  if(a.state==='wander') {
+    const dx=a.wanderTarget.x-a.x, dy=a.wanderTarget.y-a.y;
+    const d=Math.sqrt(dx*dx+dy*dy)||1;
+    const spd=a.spd;
+    a.x+=dx/d*spd; a.y+=dy/d*spd;
+    a.dir=dx>0?0:1;
+    // Don't walk into water (unless fish)
+    if(!a.onWater && getTile(Math.floor(a.x),Math.floor(a.y))==='WATER') {
+      a.x-=dx/d*spd; a.y-=dy/d*spd; a.stateTimer=0;
+    }
+    if(!a.onWater && getTile(Math.floor(a.x),Math.floor(a.y))==='ROCK') {
+      a.x-=dx/d*spd; a.y-=dy/d*spd; a.stateTimer=0;
+    }
+  }
+
+  // Respawn animals in winter to avoid total extinction
+  if(G.seasonIdx!==3 && Math.random()<0.0002 && G.animals.filter(a=>a.alive).length<30) {
+    const types=['deer','boar','rabbit','bird'];
+    const type=types[Math.floor(Math.random()*types.length)];
+    G.animals.push(mkAnimal(type, Math.random()*W.COLS, Math.random()*W.ROWS));
+  }
+}
+
+function killHuman(e) {
+  e.hp=0;
+  const tribe=G.tribes[e.tribeIdx];
+  tribe.pop=Math.max(0,tribe.pop-1);
+  tribe.members=tribe.members.filter(id=>id!==e.id);
+  const idx=G.entities.indexOf(e);
+  if(idx>=0) G.entities.splice(idx,1);
+  addEvent(`${e.name} (${tribe.name}) est décédé.`,'death');
+}
+
+// ── MAIN GAME TICK ────────────────────────────────────────────────
+function gameTick() {
+  if(G.paused) return;
+
+  G.tick++;
+  G.day++;
+
+  // Season progression
+  G.dayInSeason++;
+  if(G.dayInSeason >= G.DAYS_PER_SEASON) {
+    G.dayInSeason=0;
+    G.seasonIdx=(G.seasonIdx+1)%4;
+    updateSeasonVisuals();
+    const s=SEASONS[G.seasonIdx];
+    addEvent(`Changement de saison : ${s.emoji} ${s.name}. Temp: ${s.temp}°C.`,'season');
+    // Winter warning
+    if(G.seasonIdx===3) {
+      addEvent('❄ L\'hiver arrive. La nourriture va manquer...','season');
+    }
+  }
+
+  if(G.day % 365 === 0) {
+    G.year--;
+    addEvent(`An ${G.year} BP — Nouvelle année.`,'season');
+  }
+
+  // Update entities
+  const steps = G.speed;
+  for(let s=0;s<steps;s++) {
+    for(const e of [...G.entities]) updateHuman(e);
+    for(const a of G.animals) if(a.alive) updateAnimal(a);
+  }
+
+  // Tribe events: reproduction, starvation
+  if(G.tick % 150 === 0) {
+    for(const tribe of G.tribes) {
+      if(!tribe.alive) continue;
+      tribe.pop = tribe.members.length;
+
+      // Starvation in winter
+      const season=SEASONS[G.seasonIdx];
+      const foodDrain = tribe.pop * (G.seasonIdx===3 ? 2.5 : 1.0);
+      tribe.food = Math.max(0, tribe.food - foodDrain);
+
+      // Reproduction
+      if(tribe.food > 40 && tribe.pop < 30 && Math.random()<(0.3*season.foodMod)) {
+        const sc=TRIBE_DEFS[tribe.idx];
+        const roles=['hunter','gatherer','gatherer','builder'];
+        const baby=mkHuman(tribe.idx, tribe.cx+(Math.random()-0.5)*4, tribe.cy+(Math.random()-0.5)*4,
+                           roles[Math.floor(Math.random()*roles.length)]);
+        baby.age=0;
+        G.entities.push(baby);
+        tribe.members.push(baby.id);
+        tribe.pop++;
+        if(Math.random()<0.3) addEvent(`${tribe.name} : naissance de ${baby.name} !`,'birth');
+      }
+
+      // Extinction check
+      if(tribe.pop===0) {
+        tribe.alive=false;
+        addEvent(`⚠ La tribu ${tribe.name} s'est éteinte.`,'death');
+      }
+
+      // Tribe expansion: build new structure periodically
+      if(tribe.food>80 && Math.random()<0.05) {
+        const bldgTypes=['hut','hut','storehouse','palisade'];
+        const type=bldgTypes[Math.floor(Math.random()*bldgTypes.length)];
+        const angle=Math.random()*Math.PI*2;
+        const r=2+Math.random()*3;
+        const tx=Math.round(tribe.cx+Math.cos(angle)*r);
+        const ty=Math.round(tribe.cy+Math.sin(angle)*r);
+        if(isWalkable(tx,ty)) {
+          G.buildings.push(mkBuilding(type, tx, ty, tribe.idx));
+          addEvent(`${tribe.name} commence la construction d'une ${type}.`,'build');
+        }
+      }
+    }
+  }
+
+  // War events
+  if(G.tick % 300 === 0) {
+    for(let i=0;i<G.tribes.length;i++) {
+      for(let j=i+1;j<G.tribes.length;j++) {
+        const d=getDiplo(i,j);
+        const ti=G.tribes[i], tj=G.tribes[j];
+        if(!ti.alive||!tj.alive) continue;
+        const distTT=Math.sqrt((ti.cx-tj.cx)**2+(ti.cy-tj.cy)**2);
+        if(d==='neutral' && distTT<12 && Math.random()<0.04) {
+          setDiplo(i,j,'war');
+          addEvent(`⚔ GUERRE ! ${ti.name} contre ${tj.name} !`,'war');
+          buildDiploPanel();
+        }
+        if(d==='war' && Math.random()<0.03) {
+          setDiplo(i,j,'neutral');
+          addEvent(`🏳 Cessez-le-feu : ${ti.name} et ${tj.name}.`,'ally');
+          buildDiploPanel();
+        }
+        if(d==='ally' && Math.random()<0.01) {
+          setDiplo(i,j,'neutral');
+          addEvent(`Alliance rompue : ${ti.name} et ${tj.name}.`,'ally');
+          buildDiploPanel();
+        }
+      }
+    }
+  }
+
+  // Update UI
+  updateTopBar();
+  buildTribeList();
+}
+
+// ── RENDERING ─────────────────────────────────────────────────────
+function resizeCanvas() {
+  const wrap=document.getElementById('canvas-wrap');
+  canvas.width=wrap.clientWidth;
+  canvas.height=wrap.clientHeight;
+}
+
+function worldToScreen(wx,wy) {
+  return {
+    sx: (wx*W.TILE - W.camX)*W.ZOOM,
+    sy: (wy*W.TILE - W.camY)*W.ZOOM,
+  };
+}
+function screenToWorld(sx,sy) {
+  return {
+    wx: sx/W.ZOOM/W.TILE + W.camX/W.TILE,
+    wy: sy/W.ZOOM/W.TILE + W.camY/W.TILE,
+  };
+}
+
+function render() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.scale(W.ZOOM,W.ZOOM);
+  ctx.translate(-W.camX,-W.camY);
+
+  // Tile map
+  const visX1=Math.floor(W.camX/W.TILE)-1;
+  const visY1=Math.floor(W.camY/W.TILE)-1;
+  const visX2=Math.ceil((W.camX+canvas.width/W.ZOOM)/W.TILE)+1;
+  const visY2=Math.ceil((W.camY+canvas.height/W.ZOOM)/W.TILE)+1;
+
+  const waterAnim = Math.sin(Date.now()/800)*0.1;
+
+  for(let y=Math.max(0,visY1);y<Math.min(W.ROWS,visY2);y++) {
+    for(let x=Math.max(0,visX1);x<Math.min(W.COLS,visX2);x++) {
+      const tile=MAP[y][x];
+      const T=TILES[tile.type];
+      const v=tile.var;
+      let col = v>0.5 ? T.col : T.col2;
+
+      // Winter = snow on ground
+      if(G.seasonIdx===3 && tile.type!=='WATER') {
+        col = blendColor(col,'#d0d8e8', 0.4+v*0.2);
+      }
+      // Autumn = orange tint on grass/forest
+      if(G.seasonIdx===2 && (tile.type==='GRASS'||tile.type==='FOREST')) {
+        col = blendColor(col,'#c07830', 0.2);
+      }
+
+      ctx.fillStyle=col;
+      ctx.fillRect(x*W.TILE, y*W.TILE, W.TILE, W.TILE);
+
+      // Tile details
+      if(tile.type==='FOREST') {
+        // Tree dots
+        ctx.fillStyle='#0a2810';
+        ctx.fillRect(x*W.TILE+4, y*W.TILE+4, 6, 6);
+        ctx.fillRect(x*W.TILE+18, y*W.TILE+10, 6, 6);
+        ctx.fillRect(x*W.TILE+10, y*W.TILE+20, 6, 6);
+      } else if(tile.type==='ROCK') {
+        ctx.fillStyle='#808080';
+        ctx.fillRect(x*W.TILE+6, y*W.TILE+8, 8,6);
+        ctx.fillRect(x*W.TILE+16, y*W.TILE+14, 8,6);
+      } else if(tile.type==='WATER') {
+        ctx.fillStyle=`rgba(100,180,255,${0.15+waterAnim*0.1+v*0.1})`;
+        ctx.fillRect(x*W.TILE, y*W.TILE+8, W.TILE, 4);
+        ctx.fillRect(x*W.TILE, y*W.TILE+20, W.TILE, 4);
+      } else if(tile.type==='GRASS' && v>0.7) {
+        ctx.fillStyle='rgba(0,80,0,0.3)';
+        ctx.fillRect(x*W.TILE+2, y*W.TILE+24, 2,6);
+        ctx.fillRect(x*W.TILE+8, y*W.TILE+22, 2,8);
+        ctx.fillRect(x*W.TILE+20, y*W.TILE+24, 2,6);
+      }
+
+      // Grid lines (subtle, only when zoomed in)
+      if(W.ZOOM>=2) {
+        ctx.strokeStyle='rgba(0,0,0,0.08)';
+        ctx.lineWidth=0.5;
+        ctx.strokeRect(x*W.TILE,y*W.TILE,W.TILE,W.TILE);
+      }
+    }
+  }
+
+  // Resources on ground
+  for(const r of G.resources) drawResourceDrop(r);
+
+  // Buildings
+  for(const b of G.buildings) if(b.alive) {
+    const {sx,sy}=worldToScreen(b.tx,b.ty);
+    if(sx>-100&&sx<canvas.width+100&&sy>-100&&sy<canvas.height+100)
+      drawBuilding(b);
+  }
+
+  // Animals
+  for(const a of G.animals) if(a.alive) {
+    const {sx,sy}=worldToScreen(a.x,a.y);
+    if(sx>-60&&sx<canvas.width+60&&sy>-60&&sy<canvas.height+60)
+      drawAnimal(a);
+  }
+
+  // Humans
+  for(const e of G.entities) {
+    const {sx,sy}=worldToScreen(e.x,e.y);
+    if(sx>-60&&sx<canvas.width+60&&sy>-60&&sy<canvas.height+60)
+      drawHuman(e);
+  }
+
+  // Selection highlight
+  if(G.selectedEntity) {
+    const se=G.selectedEntity;
+    const {sx,sy}=worldToScreen(se.x||se.tx, se.y||se.ty);
+    // reusing world coords
+    ctx.strokeStyle='#ffe060';
+    ctx.lineWidth=1/W.ZOOM*2;
+    ctx.strokeRect((se.x||se.tx)*W.TILE-12, (se.y||se.ty)*W.TILE-16, 24, 28);
+  }
+
+  ctx.restore();
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────
+function updateTopBar() {
+  document.getElementById('stat-year') && (document.getElementById('stat-year').textContent=`${G.year} BP`);
+  const vy=document.getElementById('v-stat-year'); if(vy) vy.textContent=`${G.year} BP`;
+  const vd=document.getElementById('v-stat-day'); if(vd) vd.textContent=G.day;
+  document.getElementById('stat-day').textContent=G.day;
+  const totalPop=G.entities.length;
+  document.getElementById('stat-pop').textContent=totalPop;
+  const totalFood=G.tribes.reduce((s,t)=>s+t.food,0);
+  document.getElementById('stat-food').textContent=Math.floor(totalFood);
+  document.getElementById('stat-buildings').textContent=G.buildings.filter(b=>b.alive&&b.progress>=b.hp).length;
+}
+
+function buildTribeList() {
+  const el=document.getElementById('tribe-list');
+  el.innerHTML='';
+  for(const t of G.tribes) {
+    if(!t.alive) continue;
+    const div=document.createElement('div');
+    div.className='tribe-entry'+(G.selectedTribeIdx===t.idx?' active':'');
+    div.innerHTML=`
+      <div class="tribe-dot" style="background:${t.color}"></div>
+      <span class="tribe-name">${t.name}</span>
+      <span class="tribe-pop">👤${t.pop}</span>
+    `;
+    div.onclick=()=>selectTribe(t.idx);
+    el.appendChild(div);
+  }
+}
+
+let G_selectedTribeIdx = null;
+function selectTribe(idx) {
+  G_selectedTribeIdx=idx;
+  const tribe=G.tribes[idx];
+  document.getElementById('tribe-stats-section').style.display='block';
+  const food=tribe.food;
+  const foodPct=Math.min(100,Math.floor(food/tribe.maxFood*100));
+  const faithPct=Math.floor(tribe.faith*100);
+  const tensionPct=Math.floor(tribe.tension*100);
+  document.getElementById('tribe-stats').innerHTML=`
+    <div class="stat-row">
+      <span class="stat-label">🍖 Nourr.</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${foodPct}%;background:${foodPct<20?'#e03030':'#60c840'}"></div></div>
+      <span class="stat-val">${Math.floor(food)}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">🙏 Foi</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${faithPct}%;background:#e0a030"></div></div>
+      <span class="stat-val">${faithPct}%</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">😠 Tens.</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${tensionPct}%;background:${tensionPct>60?'#e03030':'#e08030'}"></div></div>
+      <span class="stat-val">${tensionPct}%</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">👤 Pop.</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${Math.min(100,tribe.pop/30*100)}%;background:#60a0e0"></div></div>
+      <span class="stat-val">${tribe.pop}</span>
+    </div>
+  `;
+  // Move camera to tribe
+  W.camX = tribe.cx*W.TILE - canvas.width/(2*W.ZOOM);
+  W.camY = tribe.cy*W.TILE - canvas.height/(2*W.ZOOM);
+  buildTribeList();
+}
+
+function buildDiploPanel() {
+  const el=document.getElementById('diplo-list');
+  el.innerHTML='';
+  for(let i=0;i<G.tribes.length;i++) {
+    for(let j=i+1;j<G.tribes.length;j++) {
+      const d=getDiplo(i,j);
+      if(d==='neutral') continue;
+      const div=document.createElement('div');
+      div.className='diplo-row';
+      const ti=G.tribes[i], tj=G.tribes[j];
+      const icon=d==='war'?'⚔':'🤝';
+      const cls=d==='war'?'status-war':'status-ally';
+      div.innerHTML=`
+        <div class="diplo-dot" style="background:${ti.color}"></div>
+        <span class="diplo-status ${cls}">${icon}</span>
+        <div class="diplo-dot" style="background:${tj.color}"></div>
+        <span class="diplo-status ${cls}">${ti.name.split(' ')[0]}-${tj.name.split(' ')[0]}</span>
+      `;
+      el.appendChild(div);
+    }
+  }
+}
+
+function addEvent(msg, type) {
+  const log=document.getElementById('event-log');
+  const div=document.createElement('div');
+  div.className=`event-entry ${type}`;
+  div.innerHTML=`<span class="ev-time">J.${G.day}</span> ${msg}`;
+  log.insertBefore(div,log.firstChild);
+  while(log.children.length>60) log.removeChild(log.lastChild);
+}
+
+// ── CONTROLS ──────────────────────────────────────────────────────
+let SPEEDS=[1,2,4]; let speedIdx=0;
+function speedUp() {
+  speedIdx=(speedIdx+1)%SPEEDS.length;
+  G.speed=SPEEDS[speedIdx];
+  document.getElementById('speed-display').textContent=`${G.speed}x`;
+}
+function togglePause() {
+  G.paused=!G.paused;
+  document.getElementById('pause-txt').textContent=G.paused?'PLAY':'PAUSE';
+}
+function changeZoom(delta) {
+  const oz=W.ZOOM;
+  W.ZOOM=Math.max(W.ZOOM_MIN,Math.min(W.ZOOM_MAX,W.ZOOM-delta));
+  // Zoom toward center
+  const cx=canvas.width/2, cy=canvas.height/2;
+  W.camX=(W.camX+cx/oz)*W.ZOOM/oz - cx/W.ZOOM + cx/oz*(1-W.ZOOM/oz);
+}
+function setView(v) {
+  W.view=v;
+  document.getElementById('btn-village').className='view-btn'+(v==='village'?' active':'');
+  document.getElementById('btn-world').className='view-btn'+(v==='world'?' active':'');
+}
+
+// Actions
+function startWar() {
+  const other=G.tribes.filter(t=>t.alive&&t.idx!==0);
+  if(other.length===0) return;
+  const target=other[Math.floor(Math.random()*other.length)];
+  setDiplo(0,target.idx,'war');
+  addEvent(`⚔ GUERRE déclarée : ${G.tribes[0].name} contre ${target.name} !`,'war');
+  buildDiploPanel();
+}
+function proposeAlliance() {
+  const other=G.tribes.filter(t=>t.alive&&t.idx!==0&&getDiplo(0,t.idx)!=='ally');
+  if(other.length===0) return;
+  const target=other[Math.floor(Math.random()*other.length)];
+  if(getDiplo(0,target.idx)==='war') { addEvent('Impossible — nous sommes en guerre !','war'); return; }
+  setDiplo(0,target.idx,'ally');
+  addEvent(`🤝 Alliance formée : ${G.tribes[0].name} & ${target.name}.`,'ally');
+  buildDiploPanel();
+}
+function sendHunters() {
+  const hunters=G.entities.filter(e=>e.tribeIdx===0&&e.role==='hunter');
+  const animals=G.animals.filter(a=>a.alive&&!a.onWater);
+  if(hunters.length===0||animals.length===0) { addEvent('Aucun chasseur disponible.','hunt'); return; }
+  for(const h of hunters.slice(0,3)) {
+    const sorted=animals.sort((a,b)=>dist(h,a)-dist(h,b));
+    h.state='hunt'; h.target=sorted[0].id;
+  }
+  addEvent(`🏹 ${hunters.length} chasseur(s) envoyé(s) !`,'hunt');
+}
+function buildHouse() {
+  const tribe=G.tribes[0];
+  const built=G.buildings.filter(b=>b.tribeIdx===0&&b.progress>=b.hp).length;
+  const type=built<3?'hut':(built<6?'longhouse':'storehouse');
+  const angle=Math.random()*Math.PI*2;
+  const r=2+Math.random()*3;
+  const tx=Math.round(tribe.cx+Math.cos(angle)*r);
+  const ty=Math.round(tribe.cy+Math.sin(angle)*r);
+  if(!isWalkable(tx,ty)) { addEvent('Emplacement invalide, réessayez.','build'); return; }
+  G.buildings.push(mkBuilding(type, tx, ty, 0));
+  addEvent(`🏠 Construction d'une ${type} commencée !`,'build');
+}
+
+// ── MOUSE EVENTS ──────────────────────────────────────────────────
+canvas.addEventListener('mousedown', e=>{
+  W.dragging=true;
+  W.dragStart={x:e.clientX+W.camX*W.ZOOM, y:e.clientY+W.camY*W.ZOOM};
+});
+canvas.addEventListener('mousemove', e=>{
+  if(W.dragging) {
+    W.camX=(W.dragStart.x-e.clientX)/W.ZOOM;
+    W.camY=(W.dragStart.y-e.clientY)/W.ZOOM;
+    W.camX=Math.max(0,Math.min((W.COLS-1)*W.TILE-canvas.width/W.ZOOM, W.camX));
+    W.camY=Math.max(0,Math.min((W.ROWS-1)*W.TILE-canvas.height/W.ZOOM, W.camY));
+  }
+  const ww=screenToWorld(e.clientX-canvas.getBoundingClientRect().left, e.clientY-canvas.getBoundingClientRect().top);
+  document.getElementById('coord-display').textContent=`x:${Math.floor(ww.wx)} y:${Math.floor(ww.wy)}`;
+
+  // Tooltip
+  const tt=document.getElementById('tooltip');
+  const mx=e.clientX-canvas.getBoundingClientRect().left;
+  const my=e.clientY-canvas.getBoundingClientRect().top;
+  const wwc=screenToWorld(mx,my);
+  let hovered=null;
+  for(const h of G.entities) {
+    if(dist({x:wwc.wx,y:wwc.wy},h)<0.6) { hovered=h; break; }
+  }
+  if(!hovered) for(const a of G.animals) {
+    if(a.alive&&dist({x:wwc.wx,y:wwc.wy},a)<0.8) { hovered=a; break; }
+  }
+  if(hovered) {
+    const h=hovered;
+    if(h.type==='human') {
+      tt.innerHTML=`<div class="tt-name">${h.name}</div>
+        ${TRIBE_DEFS[h.tribeIdx].name}<br>
+        Rôle: ${h.role} | Age: ${h.age}<br>
+        Action: ${h.state}<br>
+        ❤ ${h.hp}/${h.maxHp} | 🍖 ${Math.floor(h.hunger)}`;
+    } else {
+      tt.innerHTML=`<div class="tt-name">${h.name}</div>
+        État: ${h.state}<br>❤ ${h.hp}`;
+    }
+    tt.style.left=(e.clientX+12)+'px';
+    tt.style.top=(e.clientY-30)+'px';
+    tt.className='show';
+  } else {
+    tt.className='';
+  }
+});
+canvas.addEventListener('mouseup', e=>{
+  if(!W.dragging || (W.dragStart && Math.abs(e.clientX-W.dragStart.x+W.camX*W.ZOOM)<4)) {
+    // Click to select
+    const rect=canvas.getBoundingClientRect();
+    const ww=screenToWorld(e.clientX-rect.left, e.clientY-rect.top);
+    let found=null;
+    for(const h of G.entities) { if(dist({x:ww.wx,y:ww.wy},h)<0.7){found=h;break;} }
+    if(!found) for(const a of G.animals) { if(a.alive&&dist({x:ww.wx,y:ww.wy},a)<0.9){found=a;break;} }
+    if(!found) for(const b of G.buildings) { if(b.alive&&Math.abs(ww.wx-b.tx)<1&&Math.abs(ww.wy-b.ty)<1){found=b;break;} }
+    if(found) {
+      G.selectedEntity=found;
+      const si=document.getElementById('selected-info');
+      si.className='show';
+      if(found.type==='human') {
+        document.getElementById('si-name').textContent=found.name;
+        document.getElementById('si-details').innerHTML=`
+          <b>${TRIBE_DEFS[found.tribeIdx].name}</b><br>
+          Rôle: ${found.role}<br>
+          Age: ${found.age}<br>
+          État: ${found.state}<br>
+          ❤ ${found.hp}/${found.maxHp}<br>
+          🍖 Faim: ${Math.floor(found.hunger)}%<br>
+          ${found.carrying?'Porte: '+found.carrying:''}
+        `;
+      } else if(found.type==='animal') {
+        document.getElementById('si-name').textContent=found.name;
+        document.getElementById('si-details').innerHTML=`
+          Espèce: ${found.kind}<br>État: ${found.state}<br>❤ ${found.hp}`;
+      } else if(found.type==='building') {
+        document.getElementById('si-name').textContent=found.name;
+        document.getElementById('si-details').innerHTML=`
+          Tribu: ${TRIBE_DEFS[found.tribeIdx].name}<br>
+          Progression: ${Math.floor(found.progress/found.hp*100)}%<br>
+          ❤ ${found.hp}
+        `;
+      }
+    } else {
+      G.selectedEntity=null;
+      document.getElementById('selected-info').className='';
+    }
+  }
+  W.dragging=false;
+});
+canvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const oz=W.ZOOM;
+  const delta=e.deltaY>0?0.15:-0.15;
+  W.ZOOM=Math.max(W.ZOOM_MIN,Math.min(W.ZOOM_MAX,W.ZOOM-delta));
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  W.camX = mx/oz + W.camX - mx/W.ZOOM;
+  W.camY = my/oz + W.camY - my/W.ZOOM;
+}, {passive:false});
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+function blendColor(hex1, hex2, t) {
+  const [r1,g1,b1]=hexToRgb(hex1), [r2,g2,b2]=hexToRgb(hex2);
+  const r=Math.round(r1+(r2-r1)*t);
+  const g=Math.round(g1+(g2-g1)*t);
+  const b=Math.round(b1+(b2-b1)*t);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+// ── MAIN LOOP ─────────────────────────────────────────────────────
+let lastTick=0;
+const TICK_INTERVAL_MS = 200; // 5 ticks/s at speed 1
+
+function loop(ts) {
+  requestAnimationFrame(loop);
+  if(!G.paused && ts-lastTick > TICK_INTERVAL_MS/G.speed) {
+    gameTick();
+    lastTick=ts;
+  }
+  render();
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────
+let villageBooted = false;
+function bootVillage() {
+  if(villageBooted) return;
+  villageBooted = true;
+  window.addEventListener('resize', ()=>{ resizeCanvas(); });
+  resizeCanvas();
+  initWorld();
+  updateSeasonVisuals();
+  updateTopBar();
+  selectTribe(0);
+  requestAnimationFrame(loop);
+}
+
+// ── PATCH: sync events to village log ──
+const _origAddEventVillage = addEvent;
+window.addEvent = function(msg, type) {
+  _origAddEventVillage(msg, type);
+  const vlog = document.getElementById('event-log-village');
+  if(!vlog) return;
+  const div = document.createElement('div');
+  div.className = 'event-entry ' + (type||'');
+  div.style.cssText = 'font-size:11px;padding:3px 5px;border-left:2px solid #4a5a6a;background:#0e1620;line-height:1.3;margin-bottom:2px;';
+  div.innerHTML = '<span style="color:#4a5a6a;font-size:10px">J.'+G.day+'</span> ' + msg;
+  vlog.insertBefore(div, vlog.firstChild);
+  while(vlog.children.length > 60) vlog.removeChild(vlog.lastChild);
+};
+
+
+// ── CONNEXION BACKEND RAILWAY ──────────────────────────────────
+const API_URL = "https://world-sim-production.up.railway.app";
+const WS_URL  = "wss://world-sim-production.up.railway.app/ws";
+let wsVillage = null;
+
+function connectVillageBackend() {
+  try {
+    wsVillage = new WebSocket(WS_URL);
+    wsVillage.onopen = () => {
+      console.log('[Village] WebSocket connecté au backend Railway');
+    };
+    wsVillage.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        const data = msg.data || msg;
+        if(data.time) {
+          G.year = data.time.year_bp || G.year;
+          G.day  = data.time.day || G.day;
+          const si = data.time.season_index;
+          if(si !== undefined) G.seasonIdx = si % 4;
+        }
+        if(data.tribes) {
+          data.tribes.forEach(bt => {
+            const local = G.tribes.find(t => t.idx === bt.id);
+            if(local) {
+              local.food  = bt.food  !== undefined ? bt.food  : local.food;
+              local.faith = bt.faith !== undefined ? bt.faith : local.faith;
+              local.pop   = bt.population || local.pop;
+              // Update members count
+              const diff = (bt.population||local.pop) - local.members.length;
+              if(diff > 0) {
+                for(let i=0;i<diff;i++) {
+                  const roles=['hunter','gatherer','gatherer','builder'];
+                  const h = mkHuman(local.idx,
+                    local.cx+(Math.random()-0.5)*4,
+                    local.cy+(Math.random()-0.5)*4,
+                    roles[Math.floor(Math.random()*roles.length)]);
+                  G.entities.push(h);
+                  local.members.push(h.id);
+                }
+              } else if(diff < 0 && local.members.length > 2) {
+                for(let i=0;i<Math.min(-diff, local.members.length-2);i++) {
+                  const id = local.members.pop();
+                  const idx = G.entities.findIndex(e=>e.id===id);
+                  if(idx>=0) G.entities.splice(idx,1);
+                }
+              }
+              local.pop = local.members.length;
+            }
+          });
+        }
+        if(data.event_log) {
+          data.event_log.slice(0,2).forEach(ev => {
+            if(ev && ev.text) addEvent(ev.text, ev.color||'season');
+          });
+        }
+        if(data.wars && data.wars.active_wars) {
+          data.wars.active_wars.forEach(w => {
+            setDiplo(w.attacker_id, w.defender_id, 'war');
+          });
+          buildDiploPanel();
+        }
+        updateTopBar();
+        updateSeasonVisuals();
+      } catch(err) { console.warn('[Village] Parse error:', err); }
+    };
+    wsVillage.onclose = () => {
+      console.log('[Village] WebSocket fermé — reconnexion dans 5s');
+      setTimeout(connectVillageBackend, 5000);
+    };
+    wsVillage.onerror = () => {
+      console.log('[Village] Backend inaccessible — simulation locale');
+    };
+  } catch(e) {
+    console.log('[Village] Pas de backend');
+  }
+}
+
+// Boot + connect
+bootVillage();
+connectVillageBackend();
+</script>
+</body>
+</html>
