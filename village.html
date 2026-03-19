@@ -327,7 +327,7 @@ ctx.imageSmoothingEnabled = false;
 // ── WORLD CONFIG ──────────────────────────────────────────────────
 const W = {
   TILE: 32,
-  COLS: 64, ROWS: 48,
+  COLS: 50, ROWS: 38,
   ZOOM: 2.0,
   ZOOM_MIN: 0.5, ZOOM_MAX: 5.0,
   camX: 0, camY: 0,
@@ -513,7 +513,7 @@ function initWorld() {
   generateMap();
   // Init tribes
   const SPAWN_CENTERS = [
-    {x:12,y:10},{x:48,y:8},{x:12,y:36},{x:48,y:34},{x:30,y:22}
+    {x:8,y:7},{x:38,y:6},{x:8,y:28},{x:38,y:28},{x:22,y:17}
   ];
   for(let i=0;i<5;i++) {
     const sc = SPAWN_CENTERS[i];
@@ -575,7 +575,7 @@ function initWorld() {
 function spawnAnimals() {
   const animalTypes = ['deer','boar','rabbit','bison','bird'];
   const waterTypes = ['fish'];
-  for(let i=0;i<100;i++) {
+  for(let i=0;i<60;i++) {
     const type = animalTypes[Math.floor(Math.random()*animalTypes.length)];
     let x,y,tries=0;
     do {
@@ -585,7 +585,7 @@ function spawnAnimals() {
     G.animals.push(mkAnimal(type, x, y));
   }
   // Fish in water
-  for(let i=0;i<35;i++) {
+  for(let i=0;i<20;i++) {
     let x,y,tries=0;
     do {
       x = Math.random()*W.COLS; y = Math.random()*W.ROWS; tries++;
@@ -989,7 +989,7 @@ function updateHuman(e) {
   // State machine
   switch(e.state) {
     case 'idle':
-      e.stateTimer = 20+Math.floor(Math.random()*30);
+      e.stateTimer = 5+Math.floor(Math.random()*10);
       chooseNextAction(e, season);
       break;
 
@@ -1030,15 +1030,21 @@ function updateHuman(e) {
       break;
 
     case 'gather':
+      // Walk toward gather spot
+      moveTowardTarget(e, 0.03);
       if(e.stateTimer<=0) {
         const tribe = G.tribes[e.tribeIdx];
-        const gain = Math.floor((4+Math.random()*6)*season.gatherMod);
+        const gain = Math.floor((4+Math.random()*8)*season.gatherMod);
         tribe.food = Math.min(tribe.maxFood, tribe.food + gain);
-        e.carrying='food'; e.carryAmt=gain;
+        if(gain>0) {
+          e.carrying='food'; e.carryAmt=gain;
+          addEvent(`${e.name} (${tribe.name}) a cueilli ${gain} nourriture.`,'gather');
+        }
+        // Return to camp
         e.state='walk';
         e.tx = tribe.cx+(Math.random()-0.5)*2;
         e.ty = tribe.cy+(Math.random()-0.5)*2;
-        if(gain>0) addEvent(`${e.name} (${tribe.name}) a cueilli ${gain} nourriture.`,'gather');
+        e.carrying=null;
       }
       break;
 
@@ -1245,7 +1251,7 @@ function updateAnimal(a) {
   }
 
   if(a.stateTimer<=0) {
-    a.state = Math.random()<0.3?'idle':'wander';
+    a.state = Math.random()<0.1?'idle':'wander';
     a.stateTimer=40+Math.floor(Math.random()*80);
     if(a.state==='wander') {
       a.wanderTarget={
@@ -1320,11 +1326,18 @@ function gameTick() {
     addEvent(`An ${G.year} BP — Nouvelle année.`,'season');
   }
 
-  // Update entities
+  // Update entities (batched to avoid freeze)
   const steps = G.speed;
   for(let s=0;s<steps;s++) {
     for(const e of [...G.entities]) updateHuman(e);
-    for(const a of G.animals) if(a.alive) updateAnimal(a);
+    // Only update visible animals + random sample of offscreen ones
+    const visCX = W.camX/W.TILE + (canvas.width/W.ZOOM)/(2*W.TILE);
+    const visCY = W.camY/W.TILE + (canvas.height/W.ZOOM)/(2*W.TILE);
+    for(const a of G.animals) {
+      if(!a.alive) continue;
+      const dx = Math.abs(a.x - visCX), dy = Math.abs(a.y - visCY);
+      if(dx < 25 || dy < 20 || Math.random() < 0.1) updateAnimal(a);
+    }
   }
 
   // Tribe events: reproduction, starvation
@@ -1339,7 +1352,7 @@ function gameTick() {
       tribe.food = Math.max(0, tribe.food - foodDrain);
 
       // Reproduction
-      if(tribe.food > 40 && tribe.pop < 30 && Math.random()<(0.3*season.foodMod)) {
+      if(tribe.food > 30 && tribe.pop < 25 && Math.random()<(0.5*season.foodMod)) {
         const sc=TRIBE_DEFS[tribe.idx];
         const roles=['hunter','gatherer','gatherer','builder'];
         const baby=mkHuman(tribe.idx, tribe.cx+(Math.random()-0.5)*4, tribe.cy+(Math.random()-0.5)*4,
@@ -1358,7 +1371,7 @@ function gameTick() {
       }
 
       // Tribe expansion: build new structure periodically
-      if(tribe.food>80 && Math.random()<0.05) {
+      if(tribe.food>50 && Math.random()<0.12) {
         const bldgTypes=['hut','hut','storehouse','palisade'];
         const type=bldgTypes[Math.floor(Math.random()*bldgTypes.length)];
         const angle=Math.random()*Math.PI*2;
@@ -1553,10 +1566,18 @@ function buildTribeList() {
     if(!t.alive) continue;
     const div=document.createElement('div');
     div.className='tribe-entry'+(G.selectedTribeIdx===t.idx?' active':'');
+    const tribeHunters = G.entities.filter(e=>e.tribeIdx===t.idx&&e.role==='hunter'&&e.state==='hunt').length;
+    const tribeBuilders = G.entities.filter(e=>e.tribeIdx===t.idx&&e.role==='builder'&&e.state==='build').length;
+    const tribeSleeping = G.entities.filter(e=>e.tribeIdx===t.idx&&e.state==='sleep').length;
     div.innerHTML=`
       <div class="tribe-dot" style="background:${t.color}"></div>
-      <span class="tribe-name">${t.name}</span>
-      <span class="tribe-pop">👤${t.pop}</span>
+      <div style="flex:1">
+        <span class="tribe-name">${t.name}</span>
+        <div style="font-size:10px;color:#6080a0;margin-top:2px;">
+          👤${t.pop} | 🍖${Math.floor(t.food)} | 🙏${Math.floor(t.faith*100)}%
+          ${tribeHunters>0?'<br>🏹'+tribeHunters+' chassent':''}${tribeBuilders>0?' 🔨'+tribeBuilders+' construisent':''}${tribeSleeping>0?' 😴'+tribeSleeping+' dorment':''}
+        </div>
+      </div>
     `;
     div.onclick=()=>selectTribe(t.idx);
     el.appendChild(div);
@@ -1817,16 +1838,22 @@ function blendColor(hex1, hex2, t) {
 }
 
 // ── MAIN LOOP ─────────────────────────────────────────────────────
-let lastTick=0;
-const TICK_INTERVAL_MS = 150; // ~6 ticks/s at speed 1
+let lastTick=0, lastRender=0;
+const TICK_INTERVAL_MS = 250; // 4 ticks/s at speed 1
 
 function loop(ts) {
   requestAnimationFrame(loop);
+  if(document.hidden) return;
+  // Game tick
   if(!G.paused && ts-lastTick > TICK_INTERVAL_MS/G.speed) {
     gameTick();
     lastTick=ts;
   }
-  render();
+  // Render capped at 30fps
+  if(ts-lastRender > 33) {
+    render();
+    lastRender=ts;
+  }
 }
 
 // ── BOOT ──────────────────────────────────────────────────────────
